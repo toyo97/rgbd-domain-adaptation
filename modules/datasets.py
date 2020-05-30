@@ -116,7 +116,3 @@ class ROD(VisionDataset):
         length = len(self.images) 
 
         return length
-            if RAM:
-              self.images.append(((pil_loader(imageRGB), pil_loader(imagedepth)), label))
-            else:
-              self.images.append(((imageRGB,imagedepth),label))
