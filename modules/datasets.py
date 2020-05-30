@@ -23,7 +23,6 @@ class synROD(VisionDataset):
 
         self.images=[]
         self.RAM=RAM
-        
         if split not in ["train", "test"]:
           raise ValueError("Split not acceptable!")
 
@@ -32,9 +31,10 @@ class synROD(VisionDataset):
         path2 = basename + "rgb_" + split + "1.txt"
 
         with open(path1, "r") as f1, open(path2, "r") as f2:
-
+          num_lines = sum(1 for line in open(path1,"r"))
+          pbar = tqdm.tqdm(total=num_lines,position=0, leave=True)
           for line1, line2 in zip(f1,f2):
-
+            pbar.update(1)
             fields1 = line1.split(" ")
             fields2 = line2.split(" ")
             imagedepth = os.path.join(root,"synROD",fields1[0])
@@ -74,9 +74,12 @@ class ROD(VisionDataset):
 
         self.images=[]
         self.RAM=RAM
-        
-        with open(os.path.isfile(os.path.join(root,"rod-split_sync.txt"))) as f:
+        filename = os.path.join(root,"ROD","rod-split_sync.txt")
+        with open(filename,"r") as f:
+          num_lines = sum(1 for line in open(filename))
+          pbar = tqdm.tqdm(total=num_lines,position=0, leave=True)
           for line in f:
+            pbar.update(1)
             fields = line.split(" ")
             rgb_path = fields[0].replace("???","rgb")
             rgb_path = rgb_path.replace("***","crop")
@@ -113,4 +116,7 @@ class ROD(VisionDataset):
         length = len(self.images) 
 
         return length
-  
+            if RAM:
+              self.images.append(((pil_loader(imageRGB), pil_loader(imagedepth)), label))
+            else:
+              self.images.append(((imageRGB,imagedepth),label))
