@@ -141,7 +141,7 @@ def RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset):
 def RGBD_e2e():
   
 
-def train_sourceonly_singlemod(modality, source_train_dataset, source_test_dataset, target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs):
+def train_sourceonly_singlemod(net, modality, source_train_dataset, source_test_dataset, target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs):
   """
   modality = RGB / depth
   """
