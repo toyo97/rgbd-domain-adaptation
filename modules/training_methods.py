@@ -17,7 +17,7 @@ def loopy(dl):
   while True:
     for x in dl: yield x
 
-def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, entropy_weight):
+def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, entropy_weight, lamda):
 
   source_losses = []
   source_accs = []
@@ -101,7 +101,7 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
       dimgs = dimgs.to(DEVICE)
       labels = labels.to(DEVICE)
 
-      outputs = net(rimgs, dimgs, LAMBDA)
+      outputs = net(rimgs, dimgs, lamda)
       loss_sp = criterion(outputs, labels)
       loss_sp.backward()
 
@@ -115,7 +115,7 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
       dimgt = dimgt.to(DEVICE)
       labels = labels.to(DEVICE)
 
-      outputs = net(rimgt, dimgt, LAMBDA)
+      outputs = net(rimgt, dimgt, lamda)
 
       loss_tp = criterion(outputs, labels)
       # old: new_loss_tp = loss_tp + ENTROPY_WEIGHT * entropy_loss(outputs)
