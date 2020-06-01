@@ -137,8 +137,118 @@ def RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset):
     print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
   print('Finished Training')
-  
-  
-def RGBD_sourceonly(split=RGB/depth):
 
 def RGBD_e2e():
+  
+
+def train_sourceonly_singlemod(modality, source_train_dataset, source_test_dataset, target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs):
+  """
+  modality = RGB / depth
+  """
+  # TO THINK:
+  # get_item of the dataset returns both modalities -> uses two different apposite Classes of Dataset?
+  # after each epoch I validate on the whole ROD or on a part of it? (besides validating on source)
+
+  source_losses = []
+  source_accs = []
+  target_losses = []
+  target_accs = []
+
+  source_train_dataloader = DataLoader(source_train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
+  criterion = nn.CrossEntropyLoss()
+
+  # used in validation (drop_last = False)
+  source_test_dataloader = DataLoader(source_test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=False)
+  target_dataloader = DataLoader(target_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=False)
+  criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
+
+  optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
+  scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+
+  net = net.to(DEVICE) 
+  cudnn.benchmark 
+
+  for epoch in range(num_epochs):
+    print('Starting epoch {}/{}'.format(epoch+1, num_epochs))
+    # ************************
+    # TRAINING
+    # ************************
+    net.train()
+    optimizer.zero_grad()
+
+    since = time.time()
+    for images_rgb, images_d, labels in source_train_dataloader:
+      if modality == 'RGB':
+        images = images_rgb
+      else:
+        images = images_d
+      
+      images = images.to(DEVICE)
+      labels = labels.to(DEVICE)
+
+      outputs = net(images)
+
+      loss = criterion(outputs, labels)
+      loss.backward()
+      optimizer.step() # update weights 
+    
+    net.train(False)
+
+    # ************************
+    # SOURCE VALIDATION
+    # ************************
+    source_loss = 0 
+    running_corrects = 0
+    for images_rgb, images_d, labels in source_test_dataloader:
+      if modality == 'RGB':
+        images = images_rgb
+      else:
+        images = images_d
+      
+      images = images.to(DEVICE)
+      labels = labels.to(DEVICE)
+
+      outputs = net(images)
+      loss = criterionFinalLoss(outputs,labels)
+      source_loss += loss.item()
+
+      _, preds = torch.max(outputs.data, 1)
+      running_corrects += torch.sum(preds == labels.data).data.item()
+    
+    source_loss = source_loss/float(len(source_test_dataset))
+    source_losses.append(source_loss)
+    source_acc = running_corrects / float(len(source_test_dataset))
+    source_accs.append(source_acc)
+
+
+    # ************************
+    # TARGET VALIDATION
+    # ************************
+    target_loss = 0 
+    running_corrects = 0
+    for images_rgb, images_d, labels in target_dataloader:
+      if modality == 'RGB':
+        images = images_rgb
+      else:
+        images = images_d
+      
+      images = images.to(DEVICE)
+      labels = labels.to(DEVICE)
+
+      outputs = net(images)
+      loss = criterionFinalLoss(outputs,labels)
+      target_loss += loss.item()
+
+      _, preds = torch.max(outputs.data, 1)
+      running_corrects += torch.sum(preds == labels.data).data.item()
+    
+    target_loss = target_loss/float(len(source_test_dataset))
+    target_losses.append(target_loss)
+    target_acc = running_corrects / float(len(source_test_dataset))
+    target_accs.append(target_acc)
+
+
+    scheduler.step()
+    time_elapsed = time.time() - since
+    print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+
