@@ -41,7 +41,6 @@ class Net(nn.Module):
             nn.ReLU(),
             nn.Dropout(p=0.5),
             nn.Linear(1000, num_classes),
-            nn.Softmax(dim=1)
         )
 
         # Xavier initialization
@@ -61,7 +60,6 @@ class Net(nn.Module):
             nn.BatchNorm1d(num_features=100),
             nn.ReLU(),
             nn.Linear(100, 4),
-            nn.Softmax(dim=1)
         )
 
         self.pretext_head.apply(init_weights)
