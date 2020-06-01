@@ -9,47 +9,48 @@ def entropy_loss(logits):
     entropy = -(torch.sum(mask_out * torch.log(mask_out)))
     return entropy / float(p_softmax.size(0))
 
-def RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset):
-  # TODO: insert hyperparameters
-  # Data loaders for synROD - MAIN/PRETEXT task only at training
-  source_dataloader = DataLoader(source_train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, drop_last=True)
 
-  # Data loader for ROD train and test - PRETEXT at train, MAIN at test (check validity of drop last when testing)
-  target_dataloader = DataLoader(target_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, drop_last=True)
+# Allow iterating over a dataset more than once
+# to deal with different number of samples between datasets
+# during training and batch sampling
+def loopy(dl):
+  while True:
+    for x in dl: yield x
 
-  # Define loss
-  # Both main and pretext losses are computed with the cross entropy function
+def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, entropy_weight):
+
+  source_losses = []
+  source_accs = []
+  target_losses = []
+  target_accs = []
+
+  # Data loaders for training phase
+  source_train_dataloader = DataLoader(source_train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
+  target_train_dataloader = DataLoader(target_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
   criterion = nn.CrossEntropyLoss()
 
-  # Define optimizer
-  # TODO try with different optimizers for the three components of the network
-  optimizer = optim.SGD(net.parameters(), lr=LR, momentum=MOMENTUM)
+  # used in validation (drop_last = False)
+  source_test_dataloader = DataLoader(source_test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=False)
+  target_test_dataloader = DataLoader(target_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=False)
+  criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-  # Define scheduler
-  scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=STEP_SIZE, gamma=GAMMA)
+  optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
+  scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
-  NUM_ITER = max(len(source_train_dataset), len(target_dataset)) // BATCH_SIZE
+  net = net.to(DEVICE) 
+  cudnn.benchmark
 
-  # Allow iterating over a dataset more than once
-  # to deal with different number of samples between datasets
-  # during training and batch sampling
-  def loopy(dl):
-    while True:
-      for x in dl: yield x
+  NUM_ITER = max(len(source_train_dataset), len(target_dataset)) // batch_size 
 
-  # By default, everything is loaded to cpu
-  net = net.to(DEVICE) # this will bring the network to GPU if DEVICE is cuda
-
-  cudnn.benchmark # optimizes runtime
-
-  for epoch in range(NUM_EPOCHS):  # loop over the dataset multiple times
+  for epoch in range(num_epochs):  # loop over the dataset multiple times
     print(f'Epoch {epoch+1}/{NUM_EPOCHS}')
     since = time.time()
     running_loss_m = 0.0
     running_loss_p = 0.0
+    running_entropy = 0.0
 
-    source_data_iter = loopy(source_dataloader)
-    target_data_iter = loopy(target_dataloader)
+    source_data_iter = loopy(source_train_dataloader)
+    target_data_iter = loopy(target_train_dataloader)
 
     for it in range(NUM_ITER):
 
@@ -73,9 +74,9 @@ def RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset):
       # compute main loss
       loss_m = criterion(outputs, labels)
 
-      # ***************************
-      # TARGET MAIN FORWARD PASS
-      # ***************************
+      # ******************************************
+      # TARGET MAIN FORWARD PASS WITH ENTROPY LOSS
+      # ******************************************
 
       rimgt, dimgt, _ = next(target_data_iter)
 
@@ -84,7 +85,8 @@ def RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset):
 
       outputs = net(rimgt, dimgt)
 
-      new_loss_m = loss_m + ENTROPY_WEIGHT * entropy_loss(outputs)
+      new_loss_m = loss_m + entropy_weight * entropy_loss(outputs)
+      running_entropy += entropy_weight * entropy_loss(outputs)
 
       new_loss_m.backward()
 
@@ -116,7 +118,7 @@ def RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset):
       outputs = net(rimgt, dimgt, LAMBDA)
 
       loss_tp = criterion(outputs, labels)
-      #new_loss_tp = loss_tp + ENTROPY_WEIGHT * entropy_loss(outputs)
+      # old: new_loss_tp = loss_tp + ENTROPY_WEIGHT * entropy_loss(outputs)
       loss_tp.backward()
 
       # update weights
@@ -126,11 +128,57 @@ def RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset):
       running_loss_m += loss_m.item()
       running_loss_p += (loss_sp+loss_tp).item()
       if it % 100 == 99:    # print every 100 mini-batches
-        print(f'[{epoch+1}, {it+1}] Lm {running_loss_m/100}, Lp {running_loss_p/100}')
+        print(f'[{epoch+1}, {it+1}] Lm {running_loss_m/100}, Lp {running_loss_p/100}, EntropyLoss {running_entropy/100}')
         running_loss_m = 0.
         running_loss_p = 0.
+        running_entropy = 0.
 
-      # TODO: validation
+
+    net.train(False)
+    # ************************
+    # SOURCE VALIDATION
+    # ************************
+    source_loss = 0 
+    running_corrects = 0
+    for images_rgb, images_d, labels in source_test_dataloader:
+      images_rgb = images_rgb.to(DEVICE)
+      images_d = images_d.to(DEVICE)
+      labels = labels.to(DEVICE)
+
+      outputs = net(images_rgb, images_d)
+      loss = criterionFinalLoss(outputs,labels)
+      source_loss += loss.item()
+
+      _, preds = torch.max(outputs.data, 1)
+      running_corrects += torch.sum(preds == labels.data).data.item()
+    
+    source_loss = source_loss/float(len(source_test_dataset))
+    source_losses.append(source_loss)
+    source_acc = running_corrects / float(len(source_test_dataset))
+    source_accs.append(source_acc)
+
+    # ************************
+    # TARGET VALIDATION
+    # ************************
+    target_loss = 0 
+    running_corrects = 0
+    for images_rgb, images_d, labels in target_test_dataloader:
+      images_rgb = images_rgb.to(DEVICE)
+      images_d = images_d.to(DEVICE)
+      labels = labels.to(DEVICE)
+
+      outputs = net(images_rgb, images_d)
+      loss = criterionFinalLoss(outputs,labels)
+      target_loss += loss.item()
+
+      _, preds = torch.max(outputs.data, 1)
+      running_corrects += torch.sum(preds == labels.data).data.item()
+    
+    target_loss = target_loss/float(len(target_dataset))
+    target_losses.append(target_loss)
+    target_acc = running_corrects / float(len(target_dataset))
+    target_accs.append(target_acc)
+
 
     scheduler.step()
     time_elapsed = time.time() - since
