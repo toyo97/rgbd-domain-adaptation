@@ -242,9 +242,9 @@ def train_sourceonly_singlemod(net, modality, source_train_dataset, source_test_
       _, preds = torch.max(outputs.data, 1)
       running_corrects += torch.sum(preds == labels.data).data.item()
     
-    target_loss = target_loss/float(len(source_test_dataset))
+    target_loss = target_loss/float(len(target_dataset))
     target_losses.append(target_loss)
-    target_acc = running_corrects / float(len(source_test_dataset))
+    target_acc = running_corrects / float(len(target_dataset))
     target_accs.append(target_acc)
 
 
