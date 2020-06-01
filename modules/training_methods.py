@@ -174,10 +174,10 @@ def train_sourceonly_singlemod(net, modality, source_train_dataset, source_test_
     # TRAINING
     # ************************
     net.train()
-    optimizer.zero_grad()
 
     since = time.time()
     for images_rgb, images_d, labels in source_train_dataloader:
+      optimizer.zero_grad()
       if modality == 'RGB':
         images = images_rgb
       else:
