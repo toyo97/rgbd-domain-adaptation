@@ -13,8 +13,8 @@ def pil_loader(path):
 
 class SynROD(VisionDataset):
 
-    def __init__(self, root, RAM, split=None, transform=None, target_transform=None):
-        super(SynROD, self).__init__(root, transform=transform, target_transform=target_transform)
+    def __init__(self, root, RAM, split=None, transforms=None):
+        super(SynROD, self).__init__(root, transforms=transforms)
 
         self.images = []
         self.RAM = RAM
@@ -44,14 +44,14 @@ class SynROD(VisionDataset):
 
         (rgb_img, depth_img), label = self.images[index]
 
-        if self.transform is not None:
+        if self.transforms is not None:
 
             if self.RAM:
-                rgb_img = self.transform(rgb_img)
-                depth_img = self.transform(depth_img)
+                rgb_img = self.transforms(rgb_img)
+                depth_img = self.transforms(depth_img)
             else:
-                rgb_img = self.transform(pil_loader(rgb_img))
-                depth_img = self.transform(pil_loader(depth_img))
+                rgb_img = self.transforms(pil_loader(rgb_img))
+                depth_img = self.transforms(pil_loader(depth_img))
 
         return rgb_img, depth_img, label
 
@@ -64,8 +64,8 @@ class SynROD(VisionDataset):
 
 class ROD(VisionDataset):
 
-    def __init__(self, root, RAM, transform=None, target_transform=None):
-        super(ROD, self).__init__(root, transform=transform, target_transform=target_transform)
+    def __init__(self, root, RAM, transforms=None):
+        super(ROD, self).__init__(root, transforms=transforms)
 
         self.images = []
         self.RAM = RAM
@@ -93,14 +93,14 @@ class ROD(VisionDataset):
 
         (rgb_img, depth_img), label = self.images[index]
 
-        if self.transform is not None:
+        if self.transforms is not None:
 
             if self.RAM:
-                rgb_img = self.transform(rgb_img)
-                depth_img = self.transform(depth_img)
+                rgb_img = self.transforms(rgb_img)
+                depth_img = self.transforms(depth_img)
             else:
-                rgb_img = self.transform(pil_loader(rgb_img))
-                depth_img = self.transform(pil_loader(depth_img))
+                rgb_img = self.transforms(pil_loader(rgb_img))
+                depth_img = self.transforms(pil_loader(depth_img))
 
         return rgb_img, depth_img, label
 
