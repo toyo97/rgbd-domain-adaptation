@@ -64,7 +64,7 @@ class SynROD_ROD(VisionDataset):
                     depth_img = os.path.join(root, "ROD", depth_path)
                     label = int(fields[1])
 
-                    if RAM:
+                    if self.RAM:
                         self.images.append(((pil_loader(rgb_img), pil_loader(depth_img)), label))
                     else:
                         self.images.append(((rgb_img, depth_img), label)) 
@@ -74,7 +74,7 @@ class SynROD_ROD(VisionDataset):
         (rgb_img, depth_img), label = self.images[index]
 
 
-        if not RAM:
+        if not self.RAM:
             rgb_img = pil_loader(rgb_img)
             depth_img = pil_loader(depth_img)
 
