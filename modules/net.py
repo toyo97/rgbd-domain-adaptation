@@ -59,6 +59,7 @@ class Net(nn.Module):
             nn.Linear(900, 100),
             nn.BatchNorm1d(num_features=100),
             nn.ReLU(),
+            nn.Dropout(p=0.5),
             nn.Linear(100, 4),
         )
 
