@@ -14,8 +14,8 @@ def pil_loader(path):
 
 class SynROD_ROD(VisionDataset):
 
-    def __init__(self, root, RAM=False, category=None, split=None, transforms=None):
-        super(SynROD_ROD, self).__init__(root, transforms=transforms)
+    def __init__(self, root, RAM=False, category=None, split=None):
+        super(SynROD_ROD, self).__init__(root, transforms=None)
 
         self.images = []
         self.RAM = RAM
@@ -72,14 +72,10 @@ class SynROD_ROD(VisionDataset):
 
         (rgb_img, depth_img), label = self.images[index]
 
-        if self.transforms is not None:
 
-            if self.RAM:
-                rgb_img = self.transforms(rgb_img)
-                depth_img = self.transforms(depth_img)
-            else:
-                rgb_img = self.transforms(pil_loader(rgb_img))
-                depth_img = self.transforms(pil_loader(depth_img))
+        if not RAM:
+            rgb_img = pil_loader(rgb_img)
+            depth_img = pil_loader(depth_img)
 
         return rgb_img, depth_img, label
 
@@ -89,18 +85,25 @@ class SynROD_ROD(VisionDataset):
 
         return length
 
-class RotatedDataset(SynROD_ROD):
+class TransformedDataset(Dataset):
     r"""
     Variation of a dataset (for relative rotation).
 
     Arguments:
         dataset (SynROD_ROD): The whole Dataset
     """
-    def __init__(self, dataset):
+    def __init__(self, dataset, transforms):
         self.dataset = dataset
+        self.transforms = transforms
 
     def __getitem__(self, idx):
-        return CoupledRotation()(self.dataset[idx][0], self.dataset[idx][1])
+        old_label = self.dataset[idx][2]
+        new_rgb, new_depth, new_label = self.transforms(self.dataset[idx][0], self.dataset[idx][1])
+        if new_label==None:
+            return new_rgb, new_depth, old_label
+        else:
+            return new_rgb, new_depth, new_label
+        
 
     def __len__(self):
         return len(self.dataset)
