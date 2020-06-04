@@ -1,6 +1,5 @@
 import tqdm
 from torchvision.datasets import VisionDataset
-from torch.utils.data import Dataset
 from PIL import Image
 import os
 import os.path
@@ -86,7 +85,7 @@ class SynROD_ROD(VisionDataset):
 
         return length
 
-class TransformedDataset(Dataset):
+class TransformedDataset(SynROD_ROD):
     r"""
     Variation of a dataset (for relative rotation).
 
