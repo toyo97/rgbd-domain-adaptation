@@ -14,13 +14,17 @@ class RGBDCompose(object):
         self.transforms = transforms
 
     def __call__(self, rgb, depth):
+        newlabel = None
         for t in self.transforms:
+            if isinstance(t, CoupledRotation):
+                rgb, depth, newlabel = t(rgb, depth)
+                continue
             try:
                 rgb = t(rgb)
                 depth = t(depth)
             except TypeError:
                 rgb, depth = t(rgb, depth)
-        return rgb, depth
+        return rgb, depth, newlabel
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '('
