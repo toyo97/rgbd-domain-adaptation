@@ -1,7 +1,8 @@
-import torchvision.transforms.functional as TF
+import torchvision.transforms.functional as F
 from torchvision import transforms
 import random
 import numbers
+
 
 class RGBDCompose(object):
     """Composes several transforms together considering the multimodality of the input.
@@ -34,8 +35,10 @@ class RGBDCompose(object):
         format_string += '\n)'
         return format_string
 
+
 class CoupledRandomCrop(object):
-    """Crop the given PIL Image at a random location.
+    """Multi-modality implementation.
+    Crop the given PIL Images at a random location.
 
     Args:
         size (sequence or int): Desired output size of the crops. If size is an
@@ -75,7 +78,8 @@ class CoupledRandomCrop(object):
 
     """
 
-    def __init__(self, size, padding_rgb=None, padding_depth=None, pad_if_needed=False, fill=0, padding_mode='constant'):
+    def __init__(self, size, padding_rgb=None, padding_depth=None, pad_if_needed=False, fill=0,
+                 padding_mode='constant'):
         if isinstance(size, numbers.Number):
             self.size = (int(size), int(size))
         else:
@@ -87,7 +91,7 @@ class CoupledRandomCrop(object):
         self.padding_mode = padding_mode
 
     @staticmethod
-    def get_params(rgb, depth, output_size):
+    def get_params(rgb, depth, output_size: tuple):
         """Get parameters for ``crop`` for a random crop.
 
         Args:
@@ -103,7 +107,7 @@ class CoupledRandomCrop(object):
 
         th, tw = output_size
         if w_rgb == tw and h_rgb == th and w_depth == tw and h_depth == th:
-            return 0, 0, h, w
+            return 0, 0, th, tw
 
         i = random.randint(0, min(h_rgb, h_depth) - th)
         j = random.randint(0, min(w_rgb, w_depth) - tw)
@@ -137,11 +141,12 @@ class CoupledRandomCrop(object):
 
         i, j, h, w = self.get_params(rgb, depth, self.size)
 
-        return TF.crop(rgb, i, j, h, w), TF.crop(depth, i, j, h, w)
+        return F.crop(rgb, i, j, h, w), F.crop(depth, i, j, h, w)
 
     def __repr__(self):
         return self.__class__.__name__ + '(size={0}, padding={1})'.format(self.size, self.padding)
-      
+
+
 class CoupledRandomHorizontalFlip(object):
     """Horizontally flip the couple of PIL Images randomly with a given probability.
 
@@ -163,11 +168,12 @@ class CoupledRandomHorizontalFlip(object):
             depth (PIL Image): Randomly flipped depth image.
         """
         if random.random() < self.p:
-            return TF.hflip(rgb), TF.hflip(depth)
+            return F.hflip(rgb), F.hflip(depth)
         return rgb, depth
 
     def __repr__(self):
         return self.__class__.__name__ + '(p={})'.format(self.p)
+
 
 class CoupledRotation(object):
     """Rotate the two PIL Images.
@@ -193,14 +199,13 @@ class CoupledRotation(object):
         j = random.randint(0, 3)
         k = random.randint(0, 3)
 
-        z = (k-j) % 4
+        z = (k - j) % 4
 
         # Note: TF.rotate is counter-clockwise
-        rgb = TF.rotate(rgb, 270*j)
-        depth = TF.rotate(depth, 270*k)
+        rgb = F.rotate(rgb, 270 * j)
+        depth = F.rotate(depth, 270 * k)
 
         return rgb, depth, z
-        
 
     def __repr__(self):
-        return self.__class__.__name__ 
+        return self.__class__.__name__

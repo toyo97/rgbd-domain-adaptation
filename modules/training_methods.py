@@ -1,7 +1,11 @@
+import torch
+from torch import optim
 from torch.backends import cudnn
 from torch.utils.data import DataLoader
-from torch import optim
-import torch
+import torch.nn.functional as F
+import torch.nn as nn
+import time
+
 
 def entropy_loss(logits):
     p_softmax = F.softmax(logits, dim=1)
@@ -11,15 +15,24 @@ def entropy_loss(logits):
     return entropy / float(p_softmax.size(0))
 
 
-# Allow iterating over a dataset more than once
-# to deal with different number of samples between datasets
-# during training and batch sampling
 def loopy(dl):
+  """
+  Allow iterating over a dataset more than once
+  to deal with different number of samples between datasets
+  during training and batch sampling
+  :param dl: dataloader
+  """
   while True:
     for x in dl: yield x
 
-def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, entropy_weight, lamda):
 
+def train_RGBD_DA(net,
+                  source_train_dataset_main, source_train_dataset_pretext,
+                  target_dataset_main, target_dataset_pretext,
+                  source_test_dataset_main, source_test_dataset_pretext,
+                  batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda):
+
+  device = 'cuda' if torch.cuda.is_available() else 'cpu'
   # Losses and accuracies on the main task
   source_losses = []
   source_accs = []
@@ -27,32 +40,45 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
   target_accs = []
 
   # Data loaders for training phase
-  source_train_dataloader = DataLoader(source_train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
-  target_train_dataloader = DataLoader(target_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
-  criterion = nn.CrossEntropyLoss()
+  # SOURCE
+  source_train_main_dataloader = DataLoader(source_train_dataset_main, batch_size=batch_size, shuffle=True,
+                                            num_workers=4, drop_last=True)
+  source_train_pretext_dataloader = DataLoader(source_train_dataset_pretext, batch_size=batch_size, shuffle=True,
+                                               num_workers=4, drop_last=True)
+  # TARGET
+  target_main_dataloader = DataLoader(target_dataset_main, batch_size=batch_size, shuffle=True, num_workers=4,
+                                      drop_last=True)
+  target_pretext_dataloader = DataLoader(target_dataset_pretext, batch_size=batch_size, shuffle=True, num_workers=4,
+                                         drop_last=True)
 
   # used in validation (drop_last = False)
-  source_test_dataloader = DataLoader(source_test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=False)
-  target_test_dataloader = DataLoader(target_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=False)
+  source_test_main_dataloader = DataLoader(source_test_dataset_main, batch_size=batch_size, shuffle=True, num_workers=4,
+                                           drop_last=False)
+  source_test_pretext_dataloader = DataLoader(source_test_dataset_pretext, batch_size=batch_size, shuffle=True,
+                                              num_workers=4, drop_last=False)
+
+  criterion = nn.CrossEntropyLoss()
   criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
   optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
   scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
-  net = net.to(DEVICE) 
+  net = net.to(device)
   cudnn.benchmark
 
-  NUM_ITER = max(len(source_train_dataset), len(target_dataset)) // batch_size 
+  NUM_ITER = max(len(source_train_dataset_main), len(target_dataset_main)) // batch_size
 
   for epoch in range(num_epochs):  # loop over the dataset multiple times
-    print(f'Epoch {epoch+1}/{NUM_EPOCHS}')
+    print(f'Epoch {epoch+1}/{num_epochs}')
     since = time.time()
     running_loss_m = 0.0
     running_loss_p = 0.0
     running_entropy = 0.0
 
-    source_data_iter = loopy(source_train_dataloader)
-    target_data_iter = loopy(target_train_dataloader)
+    source_data_main_iter = loopy(source_train_main_dataloader)
+    target_data_main_iter = loopy(target_main_dataloader)
+    source_data_pretext_iter = loopy(source_train_pretext_dataloader)
+    target_data_pretext_iter = loopy(target_pretext_dataloader)
 
     for it in range(NUM_ITER):
 
@@ -64,12 +90,12 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
       # SOURCE MAIN FORWARD PASS
       # ************************
       # unpack in RGB images, depth images and labels
-      rimgs, dimgs, labels = next(source_data_iter)
+      rimgs, dimgs, labels = next(source_train_main_dataloader)
 
       # Bring data over the device of choice
-      rimgs = rimgs.to(DEVICE)
-      dimgs = dimgs.to(DEVICE)
-      labels = labels.to(DEVICE)
+      rimgs = rimgs.to(device)
+      dimgs = dimgs.to(device)
+      labels = labels.to(device)
 
       # forward
       outputs = net(rimgs, dimgs)
@@ -80,10 +106,10 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
       # TARGET MAIN FORWARD PASS WITH ENTROPY LOSS
       # ******************************************
 
-      rimgt, dimgt, _ = next(target_data_iter)
+      rimgt, dimgt, _ = next(target_main_dataloader)
 
-      rimgt = rimgt.to(DEVICE)
-      dimgt = dimgt.to(DEVICE)
+      rimgt = rimgt.to(device)
+      dimgt = dimgt.to(device)
 
       outputs = net(rimgt, dimgt)
 
@@ -97,11 +123,11 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
       # ***************************
       # using same batch as main forward pas
 
-      rimgs, dimgs, labels = transform_batch(rimgs, dimgs)
+      rimgs, dimgs, labels = next(source_train_pretext_dataloader)
 
-      rimgs = rimgs.to(DEVICE)
-      dimgs = dimgs.to(DEVICE)
-      labels = labels.to(DEVICE)
+      rimgs = rimgs.to(device)
+      dimgs = dimgs.to(device)
+      labels = labels.to(device)
 
       outputs = net(rimgs, dimgs, lamda)
       loss_sp = criterion(outputs, labels)
@@ -111,11 +137,11 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
       # TARGET PRETEXT FORWARD PASS
       # ***************************
 
-      rimgt, dimgt, labels = transform_batch(rimgt, dimgt)
+      rimgt, dimgt, labels = next(target_pretext_dataloader)
 
-      rimgt = rimgt.to(DEVICE)
-      dimgt = dimgt.to(DEVICE)
-      labels = labels.to(DEVICE)
+      rimgt = rimgt.to(device)
+      dimgt = dimgt.to(device)
+      labels = labels.to(device)
 
       outputs = net(rimgt, dimgt, lamda)
 
@@ -142,10 +168,10 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
     # ************************
     source_loss = 0 
     running_corrects = 0
-    for images_rgb, images_d, labels in source_test_dataloader:
-      images_rgb = images_rgb.to(DEVICE)
-      images_d = images_d.to(DEVICE)
-      labels = labels.to(DEVICE)
+    for images_rgb, images_d, labels in source_test_main_dataloader:
+      images_rgb = images_rgb.to(device)
+      images_d = images_d.to(device)
+      labels = labels.to(device)
 
       outputs = net(images_rgb, images_d)
       loss = criterionFinalLoss(outputs,labels)
@@ -154,9 +180,9 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
       _, preds = torch.max(outputs.data, 1)
       running_corrects += torch.sum(preds == labels.data).data.item()
     
-    source_loss = source_loss/float(len(source_test_dataset))
+    source_loss = source_loss/float(len(source_test_dataset_main))
     source_losses.append(source_loss)
-    source_acc = running_corrects / float(len(source_test_dataset))
+    source_acc = running_corrects / float(len(source_test_dataset_main))
     source_accs.append(source_acc)
 
     # ************************
@@ -164,10 +190,10 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
     # ************************
     target_loss = 0 
     running_corrects = 0
-    for images_rgb, images_d, labels in target_test_dataloader:
-      images_rgb = images_rgb.to(DEVICE)
-      images_d = images_d.to(DEVICE)
-      labels = labels.to(DEVICE)
+    for images_rgb, images_d, labels in target_main_dataloader:
+      images_rgb = images_rgb.to(device)
+      images_d = images_d.to(device)
+      labels = labels.to(device)
 
       outputs = net(images_rgb, images_d)
       loss = criterionFinalLoss(outputs,labels)
@@ -176,9 +202,9 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
       _, preds = torch.max(outputs.data, 1)
       running_corrects += torch.sum(preds == labels.data).data.item()
     
-    target_loss = target_loss/float(len(target_dataset))
+    target_loss = target_loss/float(len(target_dataset_main))
     target_losses.append(target_loss)
-    target_acc = running_corrects / float(len(target_dataset))
+    target_acc = running_corrects / float(len(target_dataset_main))
     target_accs.append(target_acc)
 
 
@@ -187,7 +213,7 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
 
     # CHECKPOINT
     filename = 'checkpoint_end_epoch'+str(epoch+1)
-    path = F"/content/drive/My Drive/{filename}" 
+    path = f"/content/drive/My Drive/{filename}"
     torch.save({
             'epoch': epoch,
             'source_losses': source_losses,
@@ -205,8 +231,7 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
     optimizer.load_state_dict(checkpoint['optimizer'])
     epoch = checkpoint['epoch']
     """
-
-
+    # TODO add load part and remove old checkpoints
     time_elapsed = time.time() - since
     print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
@@ -219,8 +244,7 @@ def train_sourceonly_singlemod(net, modality, source_train_dataset, source_test_
   """
   modality = RGB / depth
   """
-  # TO THINK:
-  # get_item of the dataset returns both modalities -> uses two different apposite Classes of Dataset?
+  DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
   source_losses = []
   source_accs = []
