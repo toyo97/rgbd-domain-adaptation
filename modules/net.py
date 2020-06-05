@@ -23,8 +23,13 @@ def init_weights(m):
 
 
 class Net(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, single_mod=None): #single_mod = 'RGB' or 'depth'
         super(Net, self).__init__()
+        
+        self.single_mod = single_mod
+        self.num_maps=1024
+        if self.single_mod!=None:
+            self.num_maps=512
 
         self.resnet18 = models.resnet18(pretrained=True)
         self.rgb_feature_extractor = nn.Sequential(
@@ -35,7 +40,7 @@ class Net(nn.Module):
         self.main_head = nn.Sequential(
             nn.AdaptiveAvgPool2d((1, 1)),  # output has shape (batch_size, num_featues, 1, 1)
             nn.Flatten(),
-            nn.Linear(1024, 1000),  # wants first dimension = batch_size
+            nn.Linear(self.num_maps, 1000),  # wants first dimension = batch_size
             # In resnet18 it is 512 * block.expansion -> ???
             nn.BatchNorm1d(num_features=1000),
             nn.ReLU(),
@@ -65,18 +70,22 @@ class Net(nn.Module):
 
         self.pretext_head.apply(init_weights)
 
-    def forward(self, x, y, lamda=None):  # x is the rgb batch, y the depth batch
-
-        rgb_features = self.rgb_feature_extractor(x)  # list of rgb filters of the batch (list_size = batch_size)
-        depth_features = self.depth_feature_extractor(y)
-
-        tot_features = torch.cat((depth_features, rgb_features), 1)  # To check: concatenate along right direction?
-        # size_allFeatures = (batch_size, number_filters, height, width)
-        # number_filters = 512
-        # height = width = 7 if input of network is 224x224
+    def forward(self, x=None, y=None, lamda=None):  # x is the rgb batch, y the depth batch
+        if self.single_mod=='RGB':
+            tot_features = self.rgb_feature_extractor(x)
+            
+        if self.single_mod=='depth':
+            tot_features = self.depth_feature_extractor(y)
+        
+        if self.single_mod==None:
+            rgb_features = self.rgb_feature_extractor(x)  # list of rgb filters of the batch (list_size = batch_size)
+            depth_features = self.depth_feature_extractor(y)
+            tot_features = torch.cat((depth_features, rgb_features), 1)  
+            # size_allFeatures = (batch_size, number_filters, height, width)
+            # number_filters = 512
+            # height = width = 7 if input of network is 224x224
 
         if lamda is None:
-
             class_scores = self.main_head(tot_features)  # class scores of the batch
             return class_scores
 
