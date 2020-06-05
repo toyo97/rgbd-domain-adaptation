@@ -239,6 +239,7 @@ def train_RGBD_DA(net,
     print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
   print('Finished Training')
+  return source_losses, target_losses, source_accs, target_accs
 
 def RGBD_e2e(net,
              source_train_dataset_main,
@@ -383,6 +384,7 @@ def RGBD_e2e(net,
     print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
   print('Finished Training')
+  return source_losses, target_losses, source_accs, target_accs
 
 def train_sourceonly_singlemod(net, modality,
                                source_train_dataset, source_test_dataset,
@@ -518,3 +520,5 @@ def train_sourceonly_singlemod(net, modality,
 
     time_elapsed = time.time() - since
     print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+    
+  return source_losses, target_losses, source_accs, target_accs
