@@ -30,7 +30,8 @@ def train_RGBD_DA(net,
                   source_train_dataset_main, source_train_dataset_pretext,
                   target_dataset_main, target_dataset_pretext,
                   source_test_dataset_main, source_test_dataset_pretext,
-                  batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda):
+                  batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda, checkpoint):
+  # checkpoint = 'drive' or 'local'
 
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
   # Losses and accuracies on the main task
@@ -216,7 +217,10 @@ def train_RGBD_DA(net,
 
     # CHECKPOINT
     filename = 'checkpoint_end_epoch'+str(epoch+1)
-    path = f"/content/drive/My Drive/{filename}"
+    if checkpoint == 'drive':
+        path = f"/content/drive/My Drive/{filename}"
+    else:
+        path = f"{filename}"
     torch.save({
             'epoch': epoch,
             'source_losses': source_losses,
@@ -245,7 +249,9 @@ def RGBD_e2e(net,
              source_train_dataset_main,
              target_dataset_main,
              source_test_dataset_main,
-             batch_size, num_epochs, lr, momentum, step_size, gamma):
+             batch_size, num_epochs, lr, momentum, step_size, gamma, checkoint):
+  # checkpoint = 'drive' or 'local'  
+    
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
   # Losses and accuracies on the main task
   source_losses = []
@@ -361,7 +367,11 @@ def RGBD_e2e(net,
 
     # CHECKPOINT
     filename = 'checkpoint_end_epoch'+str(epoch+1)
-    path = f"/content/drive/My Drive/{filename}"
+    
+    if checkpoint == 'drive':
+        path = f"/content/drive/My Drive/{filename}"
+    else:
+        path = f"{filename}"
     torch.save({
             'epoch': epoch,
             'source_losses': source_losses,
@@ -388,8 +398,9 @@ def RGBD_e2e(net,
 
 def train_sourceonly_singlemod(net, modality,
                                source_train_dataset, source_test_dataset,
-                               target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs):
+                               target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, checkpoint):
   """
+  checkpoint = 'drive' or 'local'
   modality = RGB / depth
   """
   DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -498,7 +509,10 @@ def train_sourceonly_singlemod(net, modality,
 
     # CHECKPOINT
     filename = modality+'_checkpoint_end_epoch'+str(epoch+1)
-    path = F"/content/drive/My Drive/{filename}" 
+    if checkpoint == 'drive':
+        path = f"/content/drive/My Drive/{filename}"
+    else:
+        path = f"{filename}"
     torch.save({
             'epoch': epoch,
             'source_losses': source_losses,
