@@ -501,8 +501,13 @@ def train_sourceonly_singlemod(net, modality,
 
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
-
-            outputs = net(images)
+            
+            if modality == 'RGB':
+                outputs = net(images, None)
+            
+            else:
+                outputs = net(None, images)
+                
 
             loss = criterion(outputs, labels)
             loss.backward()
@@ -524,7 +529,12 @@ def train_sourceonly_singlemod(net, modality,
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
 
-            outputs = net(images)
+            if modality == 'RGB':
+                outputs = net(images, None)
+            
+            else:
+                outputs = net(None, images)
+                
             loss = criterionFinalLoss(outputs, labels)
             source_loss += loss.item()
 
@@ -550,7 +560,13 @@ def train_sourceonly_singlemod(net, modality,
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
 
-            outputs = net(images)
+            if modality == 'RGB':
+                outputs = net(images, None)
+            
+            else:
+                outputs = net(None, images)
+               
+           
             loss = criterionFinalLoss(outputs, labels)
             target_loss += loss.item()
 
