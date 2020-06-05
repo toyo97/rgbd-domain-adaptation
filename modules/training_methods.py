@@ -238,9 +238,11 @@ def train_RGBD_DA(net,
   print('Finished Training')
 
 def RGBD_e2e():
-  
+  pass
 
-def train_sourceonly_singlemod(net, modality, source_train_dataset, source_test_dataset, target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs):
+def train_sourceonly_singlemod(net, modality,
+                               source_train_dataset, source_test_dataset,
+                               target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs):
   """
   modality = RGB / depth
   """
@@ -252,11 +254,12 @@ def train_sourceonly_singlemod(net, modality, source_train_dataset, source_test_
   target_accs = []
 
   source_train_dataloader = DataLoader(source_train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=True)
-  criterion = nn.CrossEntropyLoss()
 
   # used in validation (drop_last = False)
   source_test_dataloader = DataLoader(source_test_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=False)
   target_dataloader = DataLoader(target_dataset, batch_size=batch_size, shuffle=True, num_workers=4, drop_last=False)
+
+  criterion = nn.CrossEntropyLoss()
   criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
   optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
