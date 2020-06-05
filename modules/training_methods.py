@@ -1,6 +1,7 @@
 from torch.backends import cudnn
 from torch.utils.data import DataLoader
 from torch import optim
+import torch
 
 def entropy_loss(logits):
     p_softmax = F.softmax(logits, dim=1)
@@ -19,6 +20,7 @@ def loopy(dl):
 
 def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, entropy_weight, lamda):
 
+  # Losses and accuracies on the main task
   source_losses = []
   source_accs = []
   target_losses = []
@@ -181,6 +183,30 @@ def train_RGBD_DA(net, source_train_dataset, source_test_dataset, target_dataset
 
 
     scheduler.step()
+    
+
+    # CHECKPOINT
+    filename = 'checkpoint_end_epoch'+str(epoch+1)
+    path = F"/content/drive/My Drive/{filename}" 
+    torch.save({
+            'epoch': epoch,
+            'source_losses': source_losses,
+            'source_accs': source_accs,
+            'target_losses': target_losses,
+            'target_accs': target_accs,
+            'net': net.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'scheduler': scheduler.state_dict()
+            }, path)
+    """
+    Example to load:
+    checkpoint = torch.load(path)
+    net.load_state_dict(checkpoint['net'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    epoch = checkpoint['epoch']
+    """
+
+
     time_elapsed = time.time() - since
     print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
@@ -195,7 +221,6 @@ def train_sourceonly_singlemod(net, modality, source_train_dataset, source_test_
   """
   # TO THINK:
   # get_item of the dataset returns both modalities -> uses two different apposite Classes of Dataset?
-  # after each epoch I validate on the whole ROD or on a part of it? (besides validating on source)
 
   source_losses = []
   source_accs = []
@@ -297,6 +322,28 @@ def train_sourceonly_singlemod(net, modality, source_train_dataset, source_test_
 
 
     scheduler.step()
+
+    # CHECKPOINT
+    filename = modality+'_checkpoint_end_epoch'+str(epoch+1)
+    path = F"/content/drive/My Drive/{filename}" 
+    torch.save({
+            'epoch': epoch,
+            'source_losses': source_losses,
+            'source_accs': source_accs,
+            'target_losses': target_losses,
+            'target_accs': target_accs,
+            'net': net.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'scheduler': scheduler.state_dict()
+            }, path)
+    """
+    Example to load:
+    checkpoint = torch.load(path)
+    net.load_state_dict(checkpoint['net'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    epoch = checkpoint['epoch']
+    """
+
+
     time_elapsed = time.time() - since
     print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-
