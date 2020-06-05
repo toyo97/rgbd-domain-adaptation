@@ -12,6 +12,20 @@ from getpass import getpass
 import urllib
 from torch.utils.data import DataLoader
 
+# forse non servono questi import
+import tqdm
+from torchvision.datasets import VisionDataset
+from torch.utils.data import Dataset
+from PIL import Image
+import os
+import os.path
+
+# forse non servono questi import
+from torchvision import models
+from torch.autograd import Function
+import copy
+
+
 if __name__=='__main__':
   since = time.time()
   
@@ -25,7 +39,7 @@ if __name__=='__main__':
   MOMENTUM = 0.9
   STEP_SIZE = 10
   GAMMA = 0.1
-  # TODO see if batch size should be different for main and pretext
+
   BATCH_SIZE = 64
   MODALITY = "RGB"
 
@@ -59,6 +73,7 @@ if __name__=='__main__':
   import modules.modules.transforms as RGBDtransforms
   import modules.modules.training_methods as run_train
   from modules.modules.datasets import SynROD_ROD
+  
   
   imgnet_mean, imgnet_std = (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
   train_transform = RGBDtransforms.RGBDCompose([transforms.Resize((256,256)),
@@ -108,27 +123,5 @@ if __name__=='__main__':
   
   train_losses, val_losses, train_accs, val_accs = run_train.train_sourceonly_singlemod(net, MODALITY,
                                source_train_dataset_main, source_test_dataset_main,
-                               target_dataset_main, BATCH_SIZE, LR, MOMENTUM, STEP_SIZE, GAMMA, NUM_EPOCHS)
+                               target_dataset_main, BATCH_SIZE, LR, MOMENTUM, STEP_SIZE, GAMMA, NUM_EPOCHS, checkpoint='local')
   
-  #PLOTS
-  plt.style.use('ggplot')
-  print('\n\nLR = {}'.format(LR))
-  x = range(NUM_EPOCHS)
-  plt.plot(x, train_losses, 'y', label='Training loss')
-  plt.plot(x, val_losses, 'r', label='Validation loss')
-  plt.title('Training and Validation loss')
-  plt.xlabel('Epochs')
-  plt.ylabel('Loss')
-  plt.legend()
-  plt.style.use('ggplot')
-  plt.show()
-
-  x = range(NUM_EPOCHS)
-  plt.plot(x, train_accs, 'b', label='Training accuracy')
-  plt.plot(x, val_accs, 'g', label='Validation accuracy')
-  plt.title('Training and Validation accuracy')
-  plt.xlabel('Epochs')
-  plt.ylabel('Accuracy')
-  plt.legend()
-  plt.style.use('ggplot')
-  plt.show()
