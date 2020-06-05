@@ -20,11 +20,12 @@ class RGBDCompose(object):
             if isinstance(t, CoupledRotation):
                 rgb, depth, newlabel = t(rgb, depth)
                 continue
-            try:
+            if isinstance(t, CoupledRandomCrop) or isinstance(t, CoupledRandomHorizontalFlip):
+                rgb, depth = t(rgb, depth)
+            else:
                 rgb = t(rgb)
                 depth = t(depth)
-            except TypeError:
-                rgb, depth = t(rgb, depth)
+                
         return rgb, depth, newlabel
 
     def __repr__(self):
