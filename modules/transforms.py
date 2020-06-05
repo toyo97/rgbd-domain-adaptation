@@ -204,38 +204,3 @@ class CoupledRotation(object):
 
     def __repr__(self):
         return self.__class__.__name__ 
-
-
-
-"""def coupled_rotation(rgb, depth):
-
-  j = random.randint(0, 3)
-  k = random.randint(0, 3)
-
-  z = (k-j) % 4
-
-  # Note: TF.rotate is counter-clockwise
-  rgb_new = TF.rotate(rgb, 270*j)
-  depth_new = TF.rotate(depth, 270*k)
-
-  return rgb_new, depth_new, z
-
-def coupled_crop(rgb, depth):
-  i, j, h, w = transforms.RandomCrop.get_params(rgb, output_size=(224, 224))
-  rgb_new = TF.crop(rgb, i, j, h, w)
-  depth_new = TF.crop(depth, i, j, h, w)
-  return rgb_new, depth_new
-
-def coupled_hflip(rgb, depth):
-  if random.random() > 0.5:
-      rgb_new = TF.hflip(rgb)
-      depth_new = TF.hflip(depth)
-  return rgb_new, depth_new
-
-# Here the two transform functions to be passed in the dataset parameter
-def pretext_transform(rgb, depth):
-  pass
-
-def main_transform(rgb, depth):
-  # TODO combine transformations for the main-task datasets
-  pass"""
