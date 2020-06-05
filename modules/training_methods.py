@@ -51,6 +51,9 @@ def train_RGBD_DA(net,
   target_pretext_dataloader = DataLoader(target_dataset_pretext, batch_size=batch_size, shuffle=True, num_workers=4,
                                          drop_last=True)
 
+  target_validation_dataloader = DataLoader(target_dataset_main, batch_size=batch_size, shuffle=True, num_workers=4,
+                                         drop_last=False)
+
   # used in validation (drop_last = False)
   source_test_main_dataloader = DataLoader(source_test_dataset_main, batch_size=batch_size, shuffle=True, num_workers=4,
                                            drop_last=False)
@@ -190,7 +193,7 @@ def train_RGBD_DA(net,
     # ************************
     target_loss = 0 
     running_corrects = 0
-    for images_rgb, images_d, labels in target_main_dataloader:
+    for images_rgb, images_d, labels in target_validation_dataloader:
       images_rgb = images_rgb.to(device)
       images_d = images_d.to(device)
       labels = labels.to(device)
@@ -237,8 +240,149 @@ def train_RGBD_DA(net,
 
   print('Finished Training')
 
-def RGBD_e2e():
-  pass
+def RGBD_e2e(net,
+             source_train_dataset_main,
+             target_dataset_main,
+             source_test_dataset_main,
+             batch_size, num_epochs, lr, momentum, step_size, gamma):
+  device = 'cuda' if torch.cuda.is_available() else 'cpu'
+  # Losses and accuracies on the main task
+  source_losses = []
+  source_accs = []
+  target_losses = []
+  target_accs = []
+
+  # Data loaders for training phase
+  # SOURCE
+  source_train_main_dataloader = DataLoader(source_train_dataset_main, batch_size=batch_size, shuffle=True,
+                                            num_workers=4, drop_last=True)
+
+  # TARGET
+  target_validation_dataloader = DataLoader(target_dataset_main, batch_size=batch_size, shuffle=True, num_workers=4,
+                                         drop_last=False)
+
+  # used in validation (drop_last = False)
+  source_test_main_dataloader = DataLoader(source_test_dataset_main, batch_size=batch_size, shuffle=True, num_workers=4,
+                                           drop_last=False)
+
+  criterion = nn.CrossEntropyLoss()
+  criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
+
+  optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
+  scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+
+  net = net.to(device)
+  cudnn.benchmark
+
+  for epoch in range(num_epochs):  # loop over the dataset multiple times
+    print(f'Epoch {epoch+1}/{num_epochs}')
+    since = time.time()
+    running_loss_m = 0.0
+    running_loss_p = 0.0
+    running_entropy = 0.0
+
+    for rimgs, dimgs, labels in source_train_main_dataloader:
+
+      # set to train and zero the parameter gradients
+      net.train()
+      optimizer.zero_grad()
+
+      # Bring data over the device of choice
+      rimgs = rimgs.to(device)
+      dimgs = dimgs.to(device)
+      labels = labels.to(device)
+
+      # forward
+      outputs = net(rimgs, dimgs)
+      # compute main loss
+      loss_m = criterion(outputs, labels)
+
+      loss_m.backward()
+
+      # update weights
+      optimizer.step()
+
+      # print statistics
+      running_loss_m += loss_m.item()
+      if it % 100 == 99:    # print every 100 mini-batches
+        print(f'[{epoch+1}, {it+1}] Lm {running_loss_m/100}')
+        running_loss_m = 0.
+
+
+    net.train(False)
+    # ************************
+    # SOURCE VALIDATION
+    # ************************
+    source_loss = 0 
+    running_corrects = 0
+    for images_rgb, images_d, labels in source_test_main_dataloader:
+      images_rgb = images_rgb.to(device)
+      images_d = images_d.to(device)
+      labels = labels.to(device)
+
+      outputs = net(images_rgb, images_d)
+      loss = criterionFinalLoss(outputs,labels)
+      source_loss += loss.item()
+
+      _, preds = torch.max(outputs.data, 1)
+      running_corrects += torch.sum(preds == labels.data).data.item()
+    
+    source_loss = source_loss/float(len(source_test_dataset_main))
+    source_losses.append(source_loss)
+    source_acc = running_corrects / float(len(source_test_dataset_main))
+    source_accs.append(source_acc)
+
+    # ************************
+    # TARGET VALIDATION
+    # ************************
+    target_loss = 0 
+    running_corrects = 0
+    for images_rgb, images_d, labels in target_validation_dataloader:
+      images_rgb = images_rgb.to(device)
+      images_d = images_d.to(device)
+      labels = labels.to(device)
+
+      outputs = net(images_rgb, images_d)
+      loss = criterionFinalLoss(outputs,labels)
+      target_loss += loss.item()
+
+      _, preds = torch.max(outputs.data, 1)
+      running_corrects += torch.sum(preds == labels.data).data.item()
+    
+    target_loss = target_loss/float(len(target_dataset_main))
+    target_losses.append(target_loss)
+    target_acc = running_corrects / float(len(target_dataset_main))
+    target_accs.append(target_acc)
+
+
+    scheduler.step()
+    
+
+    # CHECKPOINT
+    filename = 'checkpoint_end_epoch'+str(epoch+1)
+    path = f"/content/drive/My Drive/{filename}"
+    torch.save({
+            'epoch': epoch,
+            'source_losses': source_losses,
+            'source_accs': source_accs,
+            'target_losses': target_losses,
+            'target_accs': target_accs,
+            'net': net.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'scheduler': scheduler.state_dict()
+            }, path)
+    """
+    Example to load:
+    checkpoint = torch.load(path)
+    net.load_state_dict(checkpoint['net'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    epoch = checkpoint['epoch']
+    """
+    # TODO add load part and remove old checkpoints
+    time_elapsed = time.time() - since
+    print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+
+  print('Finished Training')
 
 def train_sourceonly_singlemod(net, modality,
                                source_train_dataset, source_test_dataset,
