@@ -264,10 +264,10 @@ def train_RGBD_DA(net,
         print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
     # delete checkpoints
-    files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
-    for f in files:
-        os.remove(f)
-    print('Finished Training. Checkpoints deleted.')
+    #files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
+    #for f in files:
+    #    os.remove(f)
+    #print('Finished Training. Checkpoints deleted.')
     return source_losses, target_losses, source_accs, target_accs
 
 
@@ -428,10 +428,10 @@ def RGBD_e2e(net,
         print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
     # delete checkpoints
-    files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
-    for f in files:
-        os.remove(f)
-    print('Finished Training. Checkpoints deleted.')
+    #files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
+    #for f in files:
+    #    os.remove(f)
+    #print('Finished Training. Checkpoints deleted.')
     return source_losses, target_losses, source_accs, target_accs
 
 
@@ -599,8 +599,8 @@ def train_sourceonly_singlemod(net, modality,
         print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
     # delete checkpoints
-    files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
-    for f in files:
-        os.remove(f)
-    print('Finished Training. Checkpoints deleted.')
+    #files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
+    #for f in files:
+    #    os.remove(f)
+    #print('Finished Training. Checkpoints deleted.')
     return source_losses, target_losses, source_accs, target_accs
