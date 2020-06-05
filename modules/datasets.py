@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 from PIL import Image
 import os
 import os.path
-from .transforms import CoupledRotation
+from .transforms import CoupledRotation, RGBDCompose
 
 
 def pil_loader(path):
@@ -94,8 +94,12 @@ class TransformedDataset(Dataset):
         dataset (SynROD_ROD): The whole Dataset
     """
     def __init__(self, dataset, transforms):
+        
         self.dataset = dataset
-        self.transforms = transforms
+        if isinstance(transforms, RGBDCompose):
+            self.transforms = transforms
+        else:
+            raise TypeError
 
     def __getitem__(self, idx):
         old_label = self.dataset[idx][2]
