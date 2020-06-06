@@ -46,7 +46,7 @@ def train_RGBD_DA(net,
                   source_train_dataset_main, source_train_dataset_pretext,
                   target_dataset_main, target_dataset_pretext,
                   source_test_dataset_main, source_test_dataset_pretext,
-                  batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda, checkpoint_dir):
+                  batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda, checkpoint_dir, weight_decay):
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
@@ -56,7 +56,7 @@ def train_RGBD_DA(net,
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
        
-    optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
+    optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
     if checkpoint is not None:
@@ -282,7 +282,7 @@ def RGBD_e2e(net,
              source_train_dataset_main,
              target_dataset_main,
              source_test_dataset_main,
-             batch_size, num_epochs, lr, momentum, step_size, gamma, checkpoint_dir):
+             batch_size, num_epochs, lr, momentum, step_size, gamma, checkpoint_dir, weight_decay):
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
@@ -293,7 +293,7 @@ def RGBD_e2e(net,
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
         
-    optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
+    optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
     if checkpoint is not None:
@@ -447,7 +447,7 @@ def RGBD_e2e(net,
 
 def train_sourceonly_singlemod(net, modality,
                                source_train_dataset, source_test_dataset,
-                               target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, checkpoint_dir):
+                               target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, checkpoint_dir, weight_decay):
     """
   modality = RGB / depth
   """
@@ -461,7 +461,7 @@ def train_sourceonly_singlemod(net, modality,
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
     
-    optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
+    optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
     if checkpoint is not None:
