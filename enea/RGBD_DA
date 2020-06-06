@@ -126,7 +126,7 @@ def main():
                   source_train_dataset_main, source_train_dataset_pretext,
                   target_dataset_main, target_dataset_pretext,
                   source_test_dataset_main, source_test_dataset_pretext,
-                  BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, ENTROPY_WEIGHT, LAMBDA, 'checkpoints/RGB_DA')
+                  BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, ENTROPY_WEIGHT, LAMBDA, 'checkpoints/RGB_DA', WEIGHT_DECAY)
   
   
 if __name__== "__main__":
