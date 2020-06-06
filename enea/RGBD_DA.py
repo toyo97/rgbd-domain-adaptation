@@ -115,7 +115,7 @@ def main():
 
   # Data loader for ROD train and test - PRETEXT at train, MAIN at test (check validity of drop last when testing)
   target_dataset_main = TransformedDataset(target_dataset, val_transform)
-  target_dataset_pretext = TransformedDataset(target_dataset, val_transform_rotation)
+  target_dataset_pretext = TransformedDataset(target_dataset, train_transform_rotation)
   
   net = Net(NUM_CLASSES)
   time_elapsed = time.time() - since
