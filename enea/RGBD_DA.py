@@ -113,8 +113,8 @@ def main():
   source_test_dataset_main = TransformedDataset(source_test_dataset, val_transform)
   source_test_dataset_pretext = TransformedDataset(source_test_dataset, val_transform_rotation)
 
-  # Data loader for ROD train and test - PRETEXT at train, MAIN at test (check validity of drop last when testing)
   target_dataset_main = TransformedDataset(target_dataset, val_transform)
+  target_dataset_main_entropy_loss = TransformedDataset(target_dataset, train_transform)
   target_dataset_pretext = TransformedDataset(target_dataset, train_transform_rotation)
   
   net = Net(NUM_CLASSES)
@@ -126,7 +126,8 @@ def main():
                   source_train_dataset_main, source_train_dataset_pretext,
                   target_dataset_main, target_dataset_pretext,
                   source_test_dataset_main, source_test_dataset_pretext,
-                  BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, ENTROPY_WEIGHT, LAMBDA, 'checkpoints/RGB_DA', WEIGHT_DECAY)
+                  BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, ENTROPY_WEIGHT, LAMBDA, 'checkpoints/RGB_DA', WEIGHT_DECAY,
+                                                                          target_dataset_main_entropy_loss)
   
   
 if __name__== "__main__":
