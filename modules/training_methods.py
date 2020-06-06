@@ -513,8 +513,8 @@ def train_sourceonly_singlemod(net, modality,
             else:
                 images = images_d
 
-            images = images.to(DEVICE)
-            labels = labels.to(DEVICE)
+            images = images.to(device)
+            labels = labels.to(device)
             
             if modality == 'RGB':
                 outputs = net(images, None)
@@ -540,8 +540,8 @@ def train_sourceonly_singlemod(net, modality,
             else:
                 images = images_d
 
-            images = images.to(DEVICE)
-            labels = labels.to(DEVICE)
+            images = images.to(device)
+            labels = labels.to(device)
 
             if modality == 'RGB':
                 outputs = net(images, None)
@@ -571,8 +571,8 @@ def train_sourceonly_singlemod(net, modality,
             else:
                 images = images_d
 
-            images = images.to(DEVICE)
-            labels = labels.to(DEVICE)
+            images = images.to(device)
+            labels = labels.to(device)
 
             if modality == 'RGB':
                 outputs = net(images, None)
