@@ -50,7 +50,9 @@ def train_RGBD_DA(net,
 
     # Load checkpoint if available
     checkpoint = load_checkpoint(checkpoint_dir)
-
+    if checkpoint is not None:
+        net.load_state_dict(checkpoint['net'])
+       
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
@@ -60,9 +62,11 @@ def train_RGBD_DA(net,
         source_accs = checkpoint['source_accs']
         target_losses = checkpoint['target_losses']
         target_accs = checkpoint['target_accs']
-        net.load_state_dict(checkpoint['net'])
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler.load_state_dict(checkpoint['scheduler'])
+        
+        print(f'Checkpoint found! Starting from epoch {epoch0}')
+   
 
     else:
         epoch0 = 0
@@ -279,7 +283,10 @@ def RGBD_e2e(net,
 
     # Load checkpoint if available
     checkpoint = load_checkpoint(checkpoint_dir)
-
+    
+    if checkpoint is not None:
+        net.load_state_dict(checkpoint['net'])
+        
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
@@ -289,7 +296,6 @@ def RGBD_e2e(net,
         source_accs = checkpoint['source_accs']
         target_losses = checkpoint['target_losses']
         target_accs = checkpoint['target_accs']
-        net.load_state_dict(checkpoint['net'])
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler.load_state_dict(checkpoint['scheduler'])
 
@@ -443,7 +449,10 @@ def train_sourceonly_singlemod(net, modality,
   """
     # Load checkpoint if available
     checkpoint = load_checkpoint(checkpoint_dir)
-
+    
+    if checkpoint is not None:
+        net.load_state_dict(checkpoint['net'])
+    
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
@@ -453,7 +462,6 @@ def train_sourceonly_singlemod(net, modality,
         source_accs = checkpoint['source_accs']
         target_losses = checkpoint['target_losses']
         target_accs = checkpoint['target_accs']
-        net.load_state_dict(checkpoint['net'])
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler.load_state_dict(checkpoint['scheduler'])
 
