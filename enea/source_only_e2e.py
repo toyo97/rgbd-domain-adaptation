@@ -122,7 +122,7 @@ def main():
              source_train_dataset_main,
              target_dataset_main,
              source_test_dataset_main,
-             BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, 'checkpoints/source_only/e2e')
+             BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, 'checkpoints/source_only/e2e', WEIGHT_DECAY)
 
 if __name__== "__main__":
   main()
