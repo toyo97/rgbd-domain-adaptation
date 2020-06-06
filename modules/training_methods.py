@@ -46,7 +46,7 @@ def train_RGBD_DA(net,
                   source_train_dataset_main, source_train_dataset_pretext,
                   target_dataset_main, target_dataset_pretext,
                   source_test_dataset_main, source_test_dataset_pretext,
-                  batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda, checkpoint_dir, weight_decay):
+                  batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda, checkpoint_dir, weight_decay, target_dataset_main_entropy_loss):
     
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
@@ -88,7 +88,7 @@ def train_RGBD_DA(net,
     source_train_pretext_dataloader = DataLoader(source_train_dataset_pretext, batch_size=batch_size, shuffle=True,
                                                  num_workers=4, drop_last=True)
     # TARGET
-    target_main_dataloader = DataLoader(target_dataset_main, batch_size=batch_size, shuffle=True, num_workers=4,
+    target_main_dataloader = DataLoader(target_dataset_main_entropy_loss, batch_size=batch_size, shuffle=True, num_workers=4,
                                         drop_last=True)
     target_pretext_dataloader = DataLoader(target_dataset_pretext, batch_size=batch_size, shuffle=True, num_workers=4,
                                            drop_last=True)
@@ -100,6 +100,8 @@ def train_RGBD_DA(net,
     source_test_main_dataloader = DataLoader(source_test_dataset_main, batch_size=batch_size, shuffle=True,
                                              num_workers=4,
                                              drop_last=False)
+    
+    # not used at the moment
     source_test_pretext_dataloader = DataLoader(source_test_dataset_pretext, batch_size=batch_size, shuffle=True,
                                                 num_workers=4, drop_last=False)
 
