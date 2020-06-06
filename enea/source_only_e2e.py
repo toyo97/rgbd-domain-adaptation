@@ -41,8 +41,6 @@ def main():
   GAMMA = 0.1
 
   BATCH_SIZE = 64
-  LAMBDA = 1 # weights contribution of the pretext loss to the total objective
-  ENTROPY_WEIGHT = 0.1
   
 # Scaricato il repository manualmente con: svn checkout https://github.com/toyo97/rgbd-domain-adaptation.git  
 #  if not os.path.isdir('./rgbd'):
