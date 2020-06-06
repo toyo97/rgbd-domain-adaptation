@@ -41,8 +41,6 @@ def main():
   GAMMA = 0.1
 
   BATCH_SIZE = 64
-  MODALITY = "RGB"
-
   LAMBDA = 1 # weights contribution of the pretext loss to the total objective
   ENTROPY_WEIGHT = 0.1
   
