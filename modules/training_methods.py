@@ -47,7 +47,10 @@ def train_RGBD_DA(net,
                   target_dataset_main, target_dataset_pretext,
                   source_test_dataset_main, source_test_dataset_pretext,
                   batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda, checkpoint_dir):
-
+    
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    net = net.to(device)
+    
     # Load checkpoint if available
     checkpoint = load_checkpoint(checkpoint_dir)
     if checkpoint is not None:
@@ -74,9 +77,9 @@ def train_RGBD_DA(net,
         source_accs = []
         target_losses = []
         target_accs = []
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     # Losses and accuracies on the main task
+        
+        print(f'No checkpoint found, starting from epoch 1')
 
     # Data loaders for training phase
     # SOURCE
@@ -103,7 +106,7 @@ def train_RGBD_DA(net,
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    net = net.to(device)
+    
     cudnn.benchmark
 
     NUM_ITER = max(len(source_train_dataset_main), len(target_dataset_main)) // batch_size
@@ -280,7 +283,10 @@ def RGBD_e2e(net,
              target_dataset_main,
              source_test_dataset_main,
              batch_size, num_epochs, lr, momentum, step_size, gamma, checkpoint_dir):
-
+    
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    net = net.to(device)
+    
     # Load checkpoint if available
     checkpoint = load_checkpoint(checkpoint_dir)
     
@@ -311,7 +317,6 @@ def RGBD_e2e(net,
         print(f'No checkpoint found, starting from epoch 1')
 
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Data loaders for training phase
     # SOURCE
@@ -330,7 +335,6 @@ def RGBD_e2e(net,
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    net = net.to(device)
     cudnn.benchmark
 
     for epoch in range(epoch0, num_epochs):  # loop over the dataset multiple times
@@ -447,6 +451,10 @@ def train_sourceonly_singlemod(net, modality,
     """
   modality = RGB / depth
   """
+    
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    net = net.to(device)
+    
     # Load checkpoint if available
     checkpoint = load_checkpoint(checkpoint_dir)
     
@@ -476,7 +484,6 @@ def train_sourceonly_singlemod(net, modality,
 
         print(f'No checkpoint found, starting from epoch 1')
 
-    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     source_train_dataloader = DataLoader(source_train_dataset, batch_size=batch_size, shuffle=True, num_workers=4,
                                          drop_last=True)
@@ -489,7 +496,6 @@ def train_sourceonly_singlemod(net, modality,
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    net = net.to(DEVICE)
     cudnn.benchmark
 
     for epoch in range(epoch0, num_epochs):
