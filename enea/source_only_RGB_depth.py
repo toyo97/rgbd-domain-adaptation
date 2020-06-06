@@ -125,7 +125,7 @@ def main():
   train_losses, val_losses, train_accs, val_accs = run_train.train_sourceonly_singlemod(net, MODALITY,
                                source_train_dataset_main, source_test_dataset_main,
                                target_dataset_main, BATCH_SIZE, LR, MOMENTUM, STEP_SIZE, GAMMA, NUM_EPOCHS,
-                                                                                        name_checkpoints_dir)
+                                                                                        name_checkpoints_dir, WEIGHT_DECAY)
 
 
 
