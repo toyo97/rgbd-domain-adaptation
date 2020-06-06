@@ -122,9 +122,12 @@ def main():
   time_elapsed = time.time() - since
   print('Time to create dataset: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
   
+  name_checkpoints_dir = 'checkpoints/source_only/' + MODALITY
+  
   train_losses, val_losses, train_accs, val_accs = run_train.train_sourceonly_singlemod(net, MODALITY,
                                source_train_dataset_main, source_test_dataset_main,
-                               target_dataset_main, BATCH_SIZE, LR, MOMENTUM, STEP_SIZE, GAMMA, NUM_EPOCHS, '.')
+                               target_dataset_main, BATCH_SIZE, LR, MOMENTUM, STEP_SIZE, GAMMA, NUM_EPOCHS,
+                                                                                        name_checkpoints_dir)
 
 
 
