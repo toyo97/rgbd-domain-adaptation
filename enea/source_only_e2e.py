@@ -38,7 +38,7 @@ def main():
   LR = 0.0003
   MOMENTUM = 0.9
   STEP_SIZE = 10
-  GAMMA = 0.1
+  GAMMA = 1
 
   BATCH_SIZE = 64
   
