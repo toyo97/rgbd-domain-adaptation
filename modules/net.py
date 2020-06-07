@@ -8,6 +8,7 @@ from torchvision.models.resnet import BasicBlock, Bottleneck, conv1x1
 
 model_urls = {'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'}
 
+
 class LambdaRev(Function):
     @staticmethod
     def forward(ctx, x, lamda):
@@ -32,7 +33,7 @@ def init_weights(m):
 
 
 class OldNet(nn.Module):
-    def __init__(self, num_classes, single_mod=None): #single_mod = 'RGB' or 'depth'
+    def __init__(self, num_classes, single_mod=None):  # single_mod = 'RGB' or 'depth'
         """
         Old version of the RGBD domain adaptation network
         @param num_classes:
@@ -41,9 +42,9 @@ class OldNet(nn.Module):
         super(OldNet, self).__init__()
 
         self.single_mod = single_mod
-        self.num_maps=1024
-        if self.single_mod!=None:
-            self.num_maps=512
+        self.num_maps = 1024
+        if self.single_mod is not None:
+            self.num_maps = 512
 
         self.resnet18 = models.resnet18(pretrained=True)
         self.rgb_feature_extractor = nn.Sequential(
@@ -85,13 +86,13 @@ class OldNet(nn.Module):
         self.pretext_head.apply(init_weights)
 
     def forward(self, x=None, y=None, lamda=None):  # x is the rgb batch, y the depth batch
-        if self.single_mod=='RGB':
+        if self.single_mod == 'RGB':
             tot_features = self.rgb_feature_extractor(x)
 
-        if self.single_mod=='depth':
+        if self.single_mod == 'depth':
             tot_features = self.depth_feature_extractor(y)
 
-        if self.single_mod==None:
+        if self.single_mod is None:
             rgb_features = self.rgb_feature_extractor(x)  # list of rgb filters of the batch (list_size = batch_size)
             depth_features = self.depth_feature_extractor(y)
             tot_features = torch.cat((depth_features, rgb_features), 1)
@@ -107,6 +108,7 @@ class OldNet(nn.Module):
             out2 = self.pretext_head(tot_features)
             out2 = LambdaRev.apply(out2, lamda)  # lambda mul in backward pass
             return out2
+
 
 class ModifiedResNet(nn.Module):
     """
@@ -178,9 +180,8 @@ class ModifiedResNet(nn.Module):
                 norm_layer(planes * block.expansion),
             )
 
-        layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample, self.groups,
-                            self.base_width, previous_dilation, norm_layer))
+        layers = [block(self.inplanes, planes, stride, downsample, self.groups,
+                        self.base_width, previous_dilation, norm_layer)]
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
             layers.append(block(self.inplanes, planes, groups=self.groups,
@@ -221,6 +222,10 @@ class Net(nn.Module):
                         otherwise leave it to None
         """
         super(Net, self).__init__()
+
+        if single_mod not in ['RGB', 'depth', None]:
+            raise ValueError('single_mod parameter not valid. Please choose between `RGB` or `depth`, otherwise leave '
+                             'it to None')
 
         self.single_mod = single_mod
         num_maps = 1024
@@ -274,14 +279,10 @@ class Net(nn.Module):
         if self.single_mod == 'depth':
             tot_features = self.depth_feature_extractor(y)
 
-        if self.single_mod == None:
+        else:
             rgb_features = self.rgb_feature_extractor(x)  # list of rgb filters of the batch (list_size = batch_size)
             depth_features = self.depth_feature_extractor(y)
             tot_features = torch.cat((depth_features, rgb_features), 1)
-
-        else:
-            raise ValueError('single_mod parameter not valid. Please choose between `RGB` or `depth`, otherwise leave '
-                             'it to None')
 
         if lamda is None:
             class_scores = self.main_head(tot_features)
