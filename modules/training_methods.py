@@ -84,26 +84,26 @@ def train_RGBD_DA(net,
     # Data loaders for training phase
     # SOURCE
     source_train_main_dataloader = DataLoader(source_train_dataset_main, batch_size=batch_size, shuffle=True,
-                                              num_workers=4, drop_last=True)
+                                              num_workers=1, drop_last=True)
     source_train_pretext_dataloader = DataLoader(source_train_dataset_pretext, batch_size=batch_size, shuffle=True,
-                                                 num_workers=4, drop_last=True)
+                                                 num_workers=1, drop_last=True)
     # TARGET
-    target_main_dataloader = DataLoader(target_dataset_main_entropy_loss, batch_size=batch_size, shuffle=True, num_workers=4,
+    target_main_dataloader = DataLoader(target_dataset_main_entropy_loss, batch_size=batch_size, shuffle=True, num_workers=1,
                                         drop_last=True)
-    target_pretext_dataloader = DataLoader(target_dataset_pretext, batch_size=batch_size, shuffle=True, num_workers=4,
+    target_pretext_dataloader = DataLoader(target_dataset_pretext, batch_size=batch_size, shuffle=True, num_workers=1,
                                            drop_last=True)
 
-    target_validation_dataloader = DataLoader(target_dataset_main, batch_size=batch_size, shuffle=True, num_workers=4,
+    target_validation_dataloader = DataLoader(target_dataset_main, batch_size=batch_size, shuffle=True, num_workers=1,
                                               drop_last=False)
 
     # used in validation (drop_last = False)
     source_test_main_dataloader = DataLoader(source_test_dataset_main, batch_size=batch_size, shuffle=True,
-                                             num_workers=4,
+                                             num_workers=1,
                                              drop_last=False)
     
     # not used at the moment
-    source_test_pretext_dataloader = DataLoader(source_test_dataset_pretext, batch_size=batch_size, shuffle=True,
-                                                num_workers=4, drop_last=False)
+    #source_test_pretext_dataloader = DataLoader(source_test_dataset_pretext, batch_size=batch_size, shuffle=True,
+    #                                            num_workers=1, drop_last=False)
 
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
