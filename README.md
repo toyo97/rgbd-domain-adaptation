@@ -1,3 +1,3 @@
 # RGB-D Domain Adaptation
 
-GoleGay
+Machine and Deep Learning Project
