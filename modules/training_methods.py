@@ -174,8 +174,8 @@ def train_RGBD_DA(net,
             dimgs = dimgs.to(device)
             labels = labels.to(device)
 
-            outputs = net(rimgs, dimgs, lamda)
-            loss_sp = criterion(outputs, labels)
+            outputs = net(rimgs, dimgs, "pretext")
+            loss_sp = lamda*criterion(outputs, labels)
             loss_sp.backward()
 
             # ***************************
@@ -188,9 +188,9 @@ def train_RGBD_DA(net,
             dimgt = dimgt.to(device)
             labels = labels.to(device)
 
-            outputs = net(rimgt, dimgt, lamda)
+            outputs = net(rimgt, dimgt, "pretext")
 
-            loss_tp = criterion(outputs, labels)
+            loss_tp = lamda*criterion(outputs, labels)
             # old: new_loss_tp = loss_tp + ENTROPY_WEIGHT * entropy_loss(outputs)
             loss_tp.backward()
 
@@ -199,7 +199,7 @@ def train_RGBD_DA(net,
 
             # print statistics
             running_loss_m += loss_m.item()
-            running_loss_p += (loss_sp + loss_tp).item()
+            running_loss_p += ((loss_sp + loss_tp).item())/lamda
             if it % 100 == 99:  # print every 100 mini-batches
                 print(
                     f'[{epoch + 1}, {it + 1}] Lm {running_loss_m / 100}, Lp {running_loss_p / 100}, EntropyLoss {running_entropy / 100}')
