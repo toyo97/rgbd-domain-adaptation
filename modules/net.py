@@ -9,21 +9,18 @@ from torchvision.models.resnet import BasicBlock, Bottleneck, conv1x1
 model_urls = {'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'}
 
 
-class LambdaRev(Function):
+"""class LambdaRev(Function):
     @staticmethod
     def forward(ctx, x, lamda):
-        """
-        Multiplication of the gradient by a scalar during backprop
         @param x: input
         @param lamda: scalar to be multiplied for in the backprop pass
         @return: output
-        """
         ctx.lamda = lamda
         return x.view_as(x)
 
     @staticmethod
     def backward(ctx, grad_output):
-        return grad_output.mul(ctx.lamda), None
+        return grad_output.mul(ctx.lamda), None"""
 
 
 def init_weights(m):
@@ -272,23 +269,22 @@ class Net(nn.Module):
 
         self.pretext_head.apply(init_weights)
 
-    def forward(self, x=None, y=None, lamda=None):  # x is the rgb batch, y the depth batch
+    def forward(self, x=None, y=None, pretext=None):  # x is the rgb batch, y the depth batch
         if self.single_mod == 'RGB':
             tot_features = self.rgb_feature_extractor(x)
 
         if self.single_mod == 'depth':
             tot_features = self.depth_feature_extractor(y)
 
-        else:
+        if self.single_mod is None:
             rgb_features = self.rgb_feature_extractor(x)  # list of rgb filters of the batch (list_size = batch_size)
             depth_features = self.depth_feature_extractor(y)
             tot_features = torch.cat((depth_features, rgb_features), 1)
 
-        if lamda is None:
+        if pretext is None:
             class_scores = self.main_head(tot_features)
             return class_scores
 
         else:
             out2 = self.pretext_head(tot_features)
-            out2 = LambdaRev.apply(out2, lamda)
             return out2
