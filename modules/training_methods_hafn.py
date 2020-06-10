@@ -213,9 +213,9 @@ def RGBD_e2e_HAFN(net,
             _, preds = torch.max(outputs.data, 1)
             running_corrects += torch.sum(preds == labels.data).data.item()
 
-        target_loss = target_loss / float(len(target_dataset_main))
+        target_loss = target_loss / float(len(target_test_dataset_main))
         target_losses.append(target_loss)
-        target_acc = running_corrects / float(len(target_dataset_main))
+        target_acc = running_corrects / float(len(target_test_dataset_main))
         target_accs.append(target_acc)
 
         scheduler.step()
@@ -371,7 +371,7 @@ def train_sourceonly_singlemod_HAFN(net, modality,
         # ************************
         source_loss = 0
         running_corrects = 0
-        for images_rgb, images_d, labels in source_test_dataloader:
+        for images_rgb, images_d, labels in source_test_main_dataloader:
             if modality == 'RGB':
                 images = images_rgb
             else:
@@ -392,9 +392,9 @@ def train_sourceonly_singlemod_HAFN(net, modality,
             _, preds = torch.max(outputs.data, 1)
             running_corrects += torch.sum(preds == labels.data).data.item()
 
-        source_loss = source_loss / float(len(source_test_dataset))
+        source_loss = source_loss / float(len(source_test_dataset_main))
         source_losses.append(source_loss)
-        source_acc = running_corrects / float(len(source_test_dataset))
+        source_acc = running_corrects / float(len(source_test_dataset_main))
         source_accs.append(source_acc)
 
         # ************************
@@ -402,7 +402,7 @@ def train_sourceonly_singlemod_HAFN(net, modality,
         # ************************
         target_loss = 0
         running_corrects = 0
-        for images_rgb, images_d, labels in target_dataloader:
+        for images_rgb, images_d, labels in target_validation_dataloader:
             if modality == 'RGB':
                 images = images_rgb
             else:
@@ -424,9 +424,9 @@ def train_sourceonly_singlemod_HAFN(net, modality,
             _, preds = torch.max(outputs.data, 1)
             running_corrects += torch.sum(preds == labels.data).data.item()
 
-        target_loss = target_loss / float(len(target_dataset))
+        target_loss = target_loss / float(len(target_test_dataset_main))
         target_losses.append(target_loss)
-        target_acc = running_corrects / float(len(target_dataset))
+        target_acc = running_corrects / float(len(target_test_dataset_main))
         target_accs.append(target_acc)
 
         scheduler.step()
