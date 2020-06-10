@@ -5,6 +5,7 @@ from torch.autograd import Function
 import copy
 from torch.hub import load_state_dict_from_url
 from torchvision.models.resnet import BasicBlock, Bottleneck, conv1x1
+import math
 
 model_urls = {'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'}
 
