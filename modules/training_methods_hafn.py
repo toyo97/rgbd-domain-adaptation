@@ -97,19 +97,19 @@ def RGBD_e2e_HAFN(net,
     # Data loaders for training phase
     # SOURCE
     source_train_main_dataloader = DataLoader(source_train_dataset_main, batch_size=batch_size, shuffle=True,
-                                              num_workers=2, drop_last=True)
+                                              num_workers=1, drop_last=True)
 
 	# TARGET TRAIN
     target_train_main_dataloader = DataLoader(target_train_dataset_main, batch_size=batch_size, shuffle=True,
-                                              num_workers=2, drop_last=True)
+                                              num_workers=1, drop_last=True)
 
     # TARGET
-    target_validation_dataloader = DataLoader(target_test_dataset_main, batch_size=batch_size, shuffle=True, num_workers=2,
+    target_validation_dataloader = DataLoader(target_test_dataset_main, batch_size=batch_size, shuffle=True, num_workers=1,
                                               drop_last=False)
 
     # used in validation (drop_last = False)
     source_test_main_dataloader = DataLoader(source_test_dataset_main, batch_size=batch_size, shuffle=True,
-                                             num_workers=2,
+                                             num_workers=1,
                                              drop_last=False)
 
     criterion = nn.CrossEntropyLoss()
@@ -285,19 +285,19 @@ def train_sourceonly_singlemod_HAFN(net, modality,
 
 
     source_train_main_dataloader = DataLoader(source_train_dataset_main, batch_size=batch_size, shuffle=True,
-                                              num_workers=2, drop_last=True)
+                                              num_workers=1, drop_last=True)
 
 	# TARGET TRAIN
     target_train_main_dataloader = DataLoader(target_train_dataset_main, batch_size=batch_size, shuffle=True,
-                                              num_workers=2, drop_last=True)
+                                              num_workers=1, drop_last=True)
 
     # TARGET
-    target_validation_dataloader = DataLoader(target_test_dataset_main, batch_size=batch_size, shuffle=True, num_workers=2,
+    target_validation_dataloader = DataLoader(target_test_dataset_main, batch_size=batch_size, shuffle=True, num_workers=1,
                                               drop_last=False)
 
     # used in validation (drop_last = False)
     source_test_main_dataloader = DataLoader(source_test_dataset_main, batch_size=batch_size, shuffle=True,
-                                             num_workers=2,
+                                             num_workers=1,
                                              drop_last=False)
 
     criterion = nn.CrossEntropyLoss()
