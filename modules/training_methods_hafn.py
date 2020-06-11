@@ -324,9 +324,9 @@ def train_sourceonly_singlemod_HAFN(net, modality,
             optimizer.zero_grad()
 	
             if modality == 'RGB':
-                images = images_rgb
+                images = rimgs
             else:
-                images = images_d
+                images = dimgs
 
             images = images.to(device)
             labels = labels.to(device)
@@ -342,12 +342,12 @@ def train_sourceonly_singlemod_HAFN(net, modality,
 
             s_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(s_fc2_emb)
 	
-	    images_rgb, images_d, _ = next(target_iter)
+	    rimgs, dimgs, _ = next(target_iter)
 		
 	    if modality == 'RGB':
-                images = images_rgb
+                images = rimgs
             else:
-                images = images_d
+                images = dimgs
 
             images = images.to(device)
 	
