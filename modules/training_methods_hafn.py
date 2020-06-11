@@ -146,7 +146,7 @@ def RGBD_e2e_HAFN(net,
             # compute main loss
             s_cls_loss = criterion(outputs, labels)
 
-            s_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(s_fc2_emb)
+            s_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(s_fc2_emb, radius)
 
             rimgs, dimgs, _ = next(target_iter)
 
@@ -157,7 +157,7 @@ def RGBD_e2e_HAFN(net,
             # forward
             t_fc2_emb, _ = net(rimgs, dimgs)
 
-            t_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(t_fc2_emb)
+            t_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(t_fc2_emb, radius)
 
             loss = s_cls_loss + s_fc2_ring_loss + t_fc2_ring_loss
             loss.backward()
@@ -340,7 +340,7 @@ def train_sourceonly_singlemod_HAFN(net, modality,
             # compute main loss
             s_cls_loss = criterion(outputs, labels)
 
-            s_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(s_fc2_emb)
+            s_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(s_fc2_emb, radius)
 	
 	    rimgs, dimgs, _ = next(target_iter)
 		
@@ -357,7 +357,7 @@ def train_sourceonly_singlemod_HAFN(net, modality,
             else:
                 t_fc2_emb, _ = net(None, images)
 
-            t_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(t_fc2_emb)
+            t_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(t_fc2_emb, radius)
 
             loss = s_cls_loss + s_fc2_ring_loss + t_fc2_ring_loss
 	    
