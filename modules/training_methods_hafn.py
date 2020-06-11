@@ -131,7 +131,7 @@ def RGBD_e2e_HAFN(net,
 	
         for it in range(NUM_ITER):
 
-            rimgs, dimgs, labels = next(source_iter):
+            rimgs, dimgs, labels = next(source_iter)
 
             # set to train and zero the parameter gradients
             optimizer.zero_grad()
@@ -319,7 +319,7 @@ def train_sourceonly_singlemod_HAFN(net, modality,
         since = time.time()
         for it in range(NUM_ITER):
 
-            rimgs, dimgs, labels = next(source_iter):
+            rimgs, dimgs, labels = next(source_iter)
 		
             optimizer.zero_grad()
 	
