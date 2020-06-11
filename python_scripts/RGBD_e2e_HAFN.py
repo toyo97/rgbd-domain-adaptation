@@ -47,7 +47,7 @@ def main():
   from modules.modules.datasets import TransformedDataset
   from modules.modules.net import HAFNNet
   import modules.modules.transforms as RGBDtransforms
-  import modules.modules.training_methods as run_train
+  import modules.modules.training_methods_hafn as run_train 
   from modules.modules.datasets import SynROD_ROD
   
   
