@@ -47,8 +47,8 @@ def get_cls_loss(pred, gt):
     return cls_loss
 
 
-def get_L2norm_loss_self_driven(x):
-    l = (x.norm(p=2, dim=1).mean() - args.radius) ** 2
+def get_L2norm_loss_self_driven(x, radius):
+    l = (x.norm(p=2, dim=1).mean() - radius) ** 2
     return l
 
 
