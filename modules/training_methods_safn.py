@@ -47,18 +47,21 @@ def get_cls_loss(pred, gt):
     return cls_loss
 
 
-def get_L2norm_loss_self_driven(x, radius):
-    l = (x.norm(p=2, dim=1).mean() - radius) ** 2
+def get_L2norm_loss_self_driven(x, dr):
+    radius = x.norm(p=2, dim=1).detach()
+    assert radius.requires_grad == False
+    radius = radius + dr
+    l = ((x.norm(p=2, dim=1) - radius) ** 2).mean()
     return l
 
 
-def RGBD_e2e_HAFN(net,
+def RGBD_e2e_SAFN(net,
                   source_train_dataset_main,
                   target_train_dataset_main,
                   source_test_dataset_main,
                   target_test_dataset_main,
                   batch_size, num_epochs, lr, momentum, step_size, gamma, checkpoint_dir, weight_decay,
-                  radius, weight_L2norm, dropout_p):
+                  dr, weight_L2norm, entropy):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
 
@@ -144,7 +147,7 @@ def RGBD_e2e_HAFN(net,
             # compute main loss
             s_cls_loss = criterion(outputs, labels)
 
-            s_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(s_fc2_emb, radius)
+            s_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(s_fc2_emb, dr)
 
             rimgs, dimgs, _ = next(target_iter)
 
@@ -153,11 +156,15 @@ def RGBD_e2e_HAFN(net,
             dimgs = dimgs.to(device)
 
             # forward
-            t_fc2_emb, _ = net(rimgs, dimgs)
+            t_fc2_emb, outputs = net(rimgs, dimgs)
 
-            t_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(t_fc2_emb, radius)
+            t_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(t_fc2_emb, dr)
 
             loss = s_cls_loss + s_fc2_ring_loss + t_fc2_ring_loss
+
+            if entropy:
+                loss += entropy_loss(outputs)
+
             loss.backward()
 
             # update weights
@@ -239,14 +246,14 @@ def RGBD_e2e_HAFN(net,
     return source_losses, target_losses, source_accs, target_accs
 
 
-def train_sourceonly_singlemod_HAFN(net, modality,
+def train_sourceonly_singlemod_SAFN(net, modality,
                                     source_train_dataset_main,
                                     target_train_dataset_main,
                                     source_test_dataset_main,
                                     target_test_dataset_main,
                                     batch_size, lr, momentum, step_size, gamma, num_epochs, checkpoint_dir,
                                     weight_decay,
-                                    radius, weight_L2norm, dropout_p):
+                                    dr, weight_L2norm, entropy):
     """
   modality = RGB / depth
   """
@@ -340,7 +347,7 @@ def train_sourceonly_singlemod_HAFN(net, modality,
             # compute main loss
             s_cls_loss = criterion(outputs, labels)
 
-            s_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(s_fc2_emb, radius)
+            s_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(s_fc2_emb, dr)
 
             rimgs, dimgs, _ = next(target_iter)
 
@@ -352,14 +359,17 @@ def train_sourceonly_singlemod_HAFN(net, modality,
             images = images.to(device)
 
             if modality == 'RGB':
-                t_fc2_emb, _ = net(images, None)
+                t_fc2_emb, outputs = net(images, None)
 
             else:
-                t_fc2_emb, _ = net(None, images)
+                t_fc2_emb, outputs = net(None, images)
 
-            t_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(t_fc2_emb, radius)
+            t_fc2_ring_loss = weight_L2norm * get_L2norm_loss_self_driven(t_fc2_emb, dr)
 
             loss = s_cls_loss + s_fc2_ring_loss + t_fc2_ring_loss
+
+            if entropy:
+                loss += entropy_loss(outputs)
 
             loss.backward()
             optimizer.step()  # update weights

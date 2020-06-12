@@ -1,20 +1,18 @@
-from torchvision import models
 import torch
 import torch.nn as nn
-from torch.autograd import Function
-import copy
 from torch.hub import load_state_dict_from_url
 from torchvision.models.resnet import BasicBlock, Bottleneck, conv1x1
 import math
 
 model_urls = {'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'}
 
+
 def init_weights(m):
     if type(m) in [nn.Linear, nn.Conv2d]:
         nn.init.xavier_uniform_(m.weight)
         m.bias.data.fill_(0.0)
 
-        
+
 class ModifiedResNet(nn.Module):
     """
     Pytorch implementation of Resnet without the last two layers (fully connected and pooling)
@@ -197,6 +195,7 @@ class Net(nn.Module):
             out2 = self.pretext_head(tot_features)
             return out2
 
+
 class HAFNNet(nn.Module):
     def __init__(self, num_classes, single_mod=None, dropout_p=0.5):
         """
@@ -235,7 +234,6 @@ class HAFNNet(nn.Module):
         )
         self.fc2 = nn.Linear(1000, num_classes)
 
-
         # Xavier initialization
         self.main_head.apply(init_weights)
         self.fc2.apply(init_weights)
@@ -259,7 +257,6 @@ class HAFNNet(nn.Module):
 
         self.pretext_head.apply(init_weights)
 
-
     def forward(self, x=None, y=None, pretext=None):  # x is the rgb batch, y the depth batch
         if self.single_mod == 'RGB':
             tot_features = self.rgb_feature_extractor(x)
@@ -276,8 +273,8 @@ class HAFNNet(nn.Module):
             out = self.main_head(tot_features)
 
             if self.training:
-           		out.mul_(math.sqrt(1 - self.dropout_p))
-            
+                out.mul_(math.sqrt(1 - self.dropout_p))
+
             class_scores = self.fc2(out)
             return out, class_scores
 
