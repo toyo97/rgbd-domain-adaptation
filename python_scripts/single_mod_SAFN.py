@@ -40,9 +40,11 @@ def main():
     GAMMA = 1
 
     BATCH_SIZE = 64
+    MODALITY = "RGB"
 
-    RADIUS = 25
+    DELTAR = 1.0
     WEIGHT_L2NORM = 0.05
+    ENTROPY = True
 
     DATA_DIR = 'repo/rgbd-domain-adaptation.git/trunk'  # 'rgbd'
 
@@ -96,20 +98,24 @@ def main():
     target_train_dataset_main = TransformedDataset(target_dataset, train_transform)
     target_test_dataset_main = TransformedDataset(target_dataset, val_transform)
 
-    net = HAFNNet(NUM_CLASSES, dropout_p=0.5)
+    net = HAFNNet(NUM_CLASSES, MODALITY, dropout_p=0.5)
     time_elapsed = time.time() - since
     print('Time to create dataset: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+    name_checkpoints_dir = 'checkpoints/hafn/' + MODALITY
 
-    train_losses, val_losses, train_accs, val_accs = run_train.RGBD_e2e_HAFN(net,
-                                                                             source_train_dataset_main,
-                                                                             target_train_dataset_main,
-                                                                             source_test_dataset_main,
-                                                                             target_test_dataset_main,
-                                                                             BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM,
-                                                                             STEP_SIZE, GAMMA, 'checkpoints/hafn/e2e',
-                                                                             WEIGHT_DECAY,
-                                                                             radius=RADIUS, weight_L2norm=WEIGHT_L2NORM,
-                                                                             dropout_p=0.5)
+    train_losses, val_losses, train_accs, val_accs = run_train.train_sourceonly_singlemod_SAFN(net, MODALITY,
+                                                                                               source_train_dataset_main,
+                                                                                               target_train_dataset_main,
+                                                                                               source_test_dataset_main,
+                                                                                               target_test_dataset_main,
+                                                                                               BATCH_SIZE, LR, MOMENTUM,
+                                                                                               STEP_SIZE, GAMMA,
+                                                                                               NUM_EPOCHS,
+                                                                                               name_checkpoints_dir,
+                                                                                               WEIGHT_DECAY,
+                                                                                               dr=DELTAR,
+                                                                                               weight_L2norm=WEIGHT_L2NORM,
+                                                                                               entropy=ENTROPY)
 
 
 if __name__ == "__main__":

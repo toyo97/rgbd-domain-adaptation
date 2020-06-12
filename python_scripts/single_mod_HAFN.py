@@ -43,6 +43,8 @@ def main():
   BATCH_SIZE = 64
   MODALITY = "RGB"
 
+  RADIUS = 25
+  WEIGHT_L2NORM = 0.05
 
   DATA_DIR = 'repo/rgbd-domain-adaptation.git/trunk'  #'rgbd'
   
@@ -106,7 +108,7 @@ def main():
              source_test_dataset_main,
              target_test_dataset_main,
              BATCH_SIZE, LR, MOMENTUM, STEP_SIZE, GAMMA, NUM_EPOCHS, name_checkpoints_dir, WEIGHT_DECAY,
-             radius=25, weight_L2norm=0.05, dropout_p=0.5)
+             radius=RADIUS, weight_L2norm=WEIGHT_L2NORM, dropout_p=0.5)
 
 if __name__== "__main__":
   main()

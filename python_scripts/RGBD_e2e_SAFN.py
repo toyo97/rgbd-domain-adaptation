@@ -41,8 +41,9 @@ def main():
 
     BATCH_SIZE = 64
 
-    RADIUS = 25
+    DELTAR = 1.0
     WEIGHT_L2NORM = 0.05
+    ENTROPY = True
 
     DATA_DIR = 'repo/rgbd-domain-adaptation.git/trunk'  # 'rgbd'
 
@@ -100,7 +101,7 @@ def main():
     time_elapsed = time.time() - since
     print('Time to create dataset: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
-    train_losses, val_losses, train_accs, val_accs = run_train.RGBD_e2e_HAFN(net,
+    train_losses, val_losses, train_accs, val_accs = run_train.RGBD_e2e_SAFN(net,
                                                                              source_train_dataset_main,
                                                                              target_train_dataset_main,
                                                                              source_test_dataset_main,
@@ -108,8 +109,9 @@ def main():
                                                                              BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM,
                                                                              STEP_SIZE, GAMMA, 'checkpoints/hafn/e2e',
                                                                              WEIGHT_DECAY,
-                                                                             radius=RADIUS, weight_L2norm=WEIGHT_L2NORM,
-                                                                             dropout_p=0.5)
+                                                                             dr=DELTAR,
+                                                                             weight_L2norm=WEIGHT_L2NORM,
+                                                                             entropy=ENTROPY)
 
 
 if __name__ == "__main__":
