@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from random import random
+import random
 from torchvision import transforms
 import time
 from sklearn.model_selection import ParameterGrid
@@ -110,7 +110,6 @@ def tuning():
     # E2E
     for i, params in enumerate(params_list):
         state_dict = {'params': params}
-        # results = train_losses, val_losses, train_accs, val_accs
         state_dict['results'] = run_train.train_sourceonly_singlemod(net,
                                                                      source_train_dataset_main,
                                                                      target_dataset_main,
