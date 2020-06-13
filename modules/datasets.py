@@ -1,10 +1,12 @@
-import tqdm
-from torchvision.datasets import VisionDataset
-from torch.utils.data import Dataset
-from PIL import Image
 import os
 import os.path
-from .transforms import CoupledRotation, RGBDCompose
+
+import tqdm
+from PIL import Image
+from torch.utils.data import Dataset
+from torchvision.datasets import VisionDataset
+
+from .transforms import RGBDCompose
 
 
 def pil_loader(path):
@@ -16,24 +18,34 @@ def pil_loader(path):
 class SynROD_ROD(VisionDataset):
 
     def __init__(self, root, RAM=False, category=None, split=None):
+        """
+        Load SynROD or ROD dataset.
+
+        Args:
+            root: path to directory containing the two folders ROD and SynROD.
+            RAM: flag to specify if images should be loaded entirely in RAM.
+                If False, images are loaded only when requested.
+            category: specify which one of the two dataset: 'ROD' or 'SynROD'
+            split: specify 'train' or 'test' split
+        """
         super(SynROD_ROD, self).__init__(root, transforms=None)
 
         self.images = []
         self.RAM = RAM
-       
+
         if category not in ["ROD", "synROD"]:
             raise ValueError("category not acceptable!")
-            
-        if category=="synROD": 
+
+        if category == "synROD":
             if split not in ["train", "test"]:
                 raise ValueError("split not acceptable!")
-        
+
             basename = os.path.join(root, category, "synARID_50k-split_")
             path1 = basename + "depth_" + split + "1.txt"
             path2 = basename + "rgb_" + split + "1.txt"
 
             with open(path1, "r") as f1, open(path2, "r") as f2:
-                num_lines = sum(1 for line in open(path1, "r"))
+                num_lines = sum(1 for _ in open(path1, "r"))
                 pbar = tqdm.tqdm(total=num_lines, position=0, leave=True)
                 for line1, line2 in zip(f1, f2):
                     pbar.update(1)
@@ -46,9 +58,9 @@ class SynROD_ROD(VisionDataset):
                         self.images.append(((pil_loader(imageRGB), pil_loader(imagedepth)), int(fields1[1])))
                     else:
                         self.images.append(((imageRGB, imagedepth), int(fields1[1])))
-                        
+
         else:
-            
+
             filename = os.path.join(root, category, "rod-split_sync.txt")
             with open(filename, "r") as f:
                 num_lines = sum(1 for _ in open(filename))
@@ -67,12 +79,11 @@ class SynROD_ROD(VisionDataset):
                     if self.RAM:
                         self.images.append(((pil_loader(rgb_img), pil_loader(depth_img)), label))
                     else:
-                        self.images.append(((rgb_img, depth_img), label)) 
+                        self.images.append(((rgb_img, depth_img), label))
 
     def __getitem__(self, index):
 
         (rgb_img, depth_img), label = self.images[index]
-
 
         if not self.RAM:
             rgb_img = pil_loader(rgb_img)
@@ -86,6 +97,7 @@ class SynROD_ROD(VisionDataset):
 
         return length
 
+
 class TransformedDataset(Dataset):
     r"""
     Variation of a dataset (for relative rotation).
@@ -93,8 +105,9 @@ class TransformedDataset(Dataset):
     Arguments:
         dataset (SynROD_ROD): The whole Dataset
     """
+
     def __init__(self, dataset, transforms):
-        
+
         self.dataset = dataset
         if isinstance(transforms, RGBDCompose):
             self.transforms = transforms
@@ -104,11 +117,10 @@ class TransformedDataset(Dataset):
     def __getitem__(self, idx):
         old_label = self.dataset[idx][2]
         new_rgb, new_depth, new_label = self.transforms(self.dataset[idx][0], self.dataset[idx][1])
-        if new_label==None:
+        if new_label is None:
             return new_rgb, new_depth, old_label
         else:
             return new_rgb, new_depth, new_label
-        
 
     def __len__(self):
         return len(self.dataset)

@@ -1,8 +1,9 @@
+import math
+
 import torch
 import torch.nn as nn
 from torch.hub import load_state_dict_from_url
 from torchvision.models.resnet import BasicBlock, Bottleneck, conv1x1
-import math
 
 model_urls = {'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth'}
 
@@ -120,8 +121,10 @@ class Net(nn.Module):
     def __init__(self, num_classes, single_mod=None):
         """
         RGBD Domain Adaptation network based on Resnet18
-        @param num_classes: number of output classes
-        @param single_mod: specify `RGB` or `depth` if only one modality is being passed through the network
+
+        Args:
+            num_classes: number of output classes
+            single_mod: specify `RGB` or `depth` if only one modality is being passed through the network
                         otherwise leave it to None
         """
         super(Net, self).__init__()
@@ -196,7 +199,7 @@ class Net(nn.Module):
             return out2
 
 
-class HAFNNet(nn.Module):
+class AFNNet(nn.Module):
     def __init__(self, num_classes, single_mod=None, dropout_p=0.5):
         """
         RGBD Domain Adaptation network based on Resnet18
@@ -204,7 +207,7 @@ class HAFNNet(nn.Module):
         @param single_mod: specify `RGB` or `depth` if only one modality is being passed through the network
                         otherwise leave it to None
         """
-        super(HAFNNet, self).__init__()
+        super(AFNNet, self).__init__()
 
         if single_mod not in ['RGB', 'depth', None]:
             raise ValueError('single_mod parameter not valid. Please choose between `RGB` or `depth`, otherwise leave '

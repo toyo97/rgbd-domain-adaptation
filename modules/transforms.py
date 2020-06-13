@@ -1,7 +1,8 @@
-import torchvision.transforms.functional as F
-from torchvision import transforms
-import random
 import numbers
+import random
+
+import torchvision.transforms.functional as TF
+from torchvision import transforms
 
 
 class RGBDCompose(object):
@@ -25,7 +26,7 @@ class RGBDCompose(object):
             else:
                 rgb = t(rgb)
                 depth = t(depth)
-                
+
         return rgb, depth, newlabel
 
     def __repr__(self):
@@ -125,24 +126,24 @@ class CoupledRandomCrop(object):
             depth (PIL Image): Cropped depth image.
         """
         if self.padding_rgb is not None:
-            rgb = F.pad(rgb, self.padding, self.fill, self.padding_mode)
+            rgb = TF.pad(rgb, self.padding, self.fill, self.padding_mode)
         if self.padding_depth is not None:
-            depth = F.pad(depth, self.padding, self.fill, self.padding_mode)
+            depth = TF.pad(depth, self.padding, self.fill, self.padding_mode)
 
         # pad the width if needed
         if self.pad_if_needed and rgb.size[0] < self.size[1]:
-            rgb = F.pad(rgb, (self.size[1] - rgb.size[0], 0), self.fill, self.padding_mode)
+            rgb = TF.pad(rgb, (self.size[1] - rgb.size[0], 0), self.fill, self.padding_mode)
         if self.pad_if_needed and depth.size[0] < self.size[1]:
-            depth = F.pad(depth, (self.size[1] - depth.size[0], 0), self.fill, self.padding_mode)
+            depth = TF.pad(depth, (self.size[1] - depth.size[0], 0), self.fill, self.padding_mode)
         # pad the height if needed
         if self.pad_if_needed and rgb.size[1] < self.size[0]:
-            rgb = F.pad(rgb, (0, self.size[0] - rgb.size[1]), self.fill, self.padding_mode)
+            rgb = TF.pad(rgb, (0, self.size[0] - rgb.size[1]), self.fill, self.padding_mode)
         if self.pad_if_needed and depth.size[1] < self.size[0]:
-            depth = F.pad(depth, (0, self.size[0] - depth.size[1]), self.fill, self.padding_mode)
+            depth = TF.pad(depth, (0, self.size[0] - depth.size[1]), self.fill, self.padding_mode)
 
         i, j, h, w = self.get_params(rgb, depth, self.size)
 
-        return F.crop(rgb, i, j, h, w), F.crop(depth, i, j, h, w)
+        return TF.crop(rgb, i, j, h, w), TF.crop(depth, i, j, h, w)
 
     def __repr__(self):
         return self.__class__.__name__ + '(size={0}, padding={1})'.format(self.size, self.padding)
@@ -169,7 +170,7 @@ class CoupledRandomHorizontalFlip(object):
             depth (PIL Image): Randomly flipped depth image.
         """
         if random.random() < self.p:
-            return F.hflip(rgb), F.hflip(depth)
+            return TF.hflip(rgb), TF.hflip(depth)
         return rgb, depth
 
     def __repr__(self):
@@ -177,10 +178,7 @@ class CoupledRandomHorizontalFlip(object):
 
 
 class CoupledRotation(object):
-    """Rotate the two PIL Images.
-
-    Args:
-        p (float): probability of the image being flipped. Default value is 0.5
+    """Rotate the two PIL Images saving their relative rotation.
     """
 
     def __init__(self):
@@ -195,7 +193,8 @@ class CoupledRotation(object):
         Returns:
             rgb (PIL Image): Randomly rotated RGB image.
             depth (PIL Image): Randomly rotated depth image.
-            z: relative rotation.
+            z: relative rotation from 0 to 3 (how many times the RGB image must be
+                rotated clockwise to match the depth image).
         """
         j = random.randint(0, 3)
         k = random.randint(0, 3)
@@ -203,8 +202,8 @@ class CoupledRotation(object):
         z = (k - j) % 4
 
         # Note: TF.rotate is counter-clockwise
-        rgb = F.rotate(rgb, 270 * j)
-        depth = F.rotate(depth, 270 * k)
+        rgb = TF.rotate(rgb, 270 * j)
+        depth = TF.rotate(depth, 270 * k)
 
         return rgb, depth, z
 

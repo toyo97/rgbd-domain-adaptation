@@ -1,12 +1,14 @@
+import glob
+import os
+import os.path
+import time
+
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from torch import optim
 from torch.backends import cudnn
 from torch.utils.data import DataLoader
-import torch.nn.functional as F
-import torch.nn as nn
-import time
-import glob
-import os
 
 
 def entropy_loss(logits):
@@ -46,32 +48,32 @@ def train_RGBD_DA(net,
                   source_train_dataset_main, source_train_dataset_pretext,
                   target_dataset_main, target_dataset_pretext,
                   source_test_dataset_main, source_test_dataset_pretext,
-                  batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda, checkpoint_dir, weight_decay, target_dataset_main_entropy_loss):
-    
+                  batch_size, num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda, checkpoint_dir,
+                  weight_decay, target_dataset_main_entropy_loss):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
-    
+
     # Load checkpoint if available
     checkpoint = None
     if checkpoint_dir is not None:
         checkpoint = load_checkpoint(checkpoint_dir)
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
-       
+
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
     if checkpoint is not None:
-        epoch0 = checkpoint['epoch'] + 1 # starting from the next epoch
+        epoch0 = checkpoint['epoch'] + 1  # starting from the next epoch
         source_losses = checkpoint['source_losses']
         source_accs = checkpoint['source_accs']
         target_losses = checkpoint['target_losses']
         target_accs = checkpoint['target_accs']
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler.load_state_dict(checkpoint['scheduler'])
-        
+
         print(f'Checkpoint found! Starting from epoch {epoch0}')
-   
+
 
     else:
         epoch0 = 0
@@ -79,8 +81,8 @@ def train_RGBD_DA(net,
         source_accs = []
         target_losses = []
         target_accs = []
-    # Losses and accuracies on the main task
-        
+        # Losses and accuracies on the main task
+
         print(f'No checkpoint found, starting from epoch 1')
 
     # Data loaders for training phase
@@ -90,7 +92,8 @@ def train_RGBD_DA(net,
     source_train_pretext_dataloader = DataLoader(source_train_dataset_pretext, batch_size=batch_size, shuffle=True,
                                                  num_workers=1, drop_last=True)
     # TARGET
-    target_main_dataloader = DataLoader(target_dataset_main_entropy_loss, batch_size=batch_size, shuffle=True, num_workers=1,
+    target_main_dataloader = DataLoader(target_dataset_main_entropy_loss, batch_size=batch_size, shuffle=True,
+                                        num_workers=1,
                                         drop_last=True)
     target_pretext_dataloader = DataLoader(target_dataset_pretext, batch_size=batch_size, shuffle=True, num_workers=1,
                                            drop_last=True)
@@ -102,15 +105,14 @@ def train_RGBD_DA(net,
     source_test_main_dataloader = DataLoader(source_test_dataset_main, batch_size=batch_size, shuffle=True,
                                              num_workers=1,
                                              drop_last=False)
-    
+
     # not used at the moment
-    #source_test_pretext_dataloader = DataLoader(source_test_dataset_pretext, batch_size=batch_size, shuffle=True,
+    # source_test_pretext_dataloader = DataLoader(source_test_dataset_pretext, batch_size=batch_size, shuffle=True,
     #                                            num_workers=1, drop_last=False)
 
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    
     cudnn.benchmark
 
     NUM_ITER = max(len(source_train_dataset_main), len(target_dataset_main)) // batch_size
@@ -177,7 +179,7 @@ def train_RGBD_DA(net,
             labels = labels.to(device)
 
             outputs = net(rimgs, dimgs, "pretext")
-            loss_sp = lamda*criterion(outputs, labels)
+            loss_sp = lamda * criterion(outputs, labels)
             loss_sp.backward()
 
             # ***************************
@@ -192,7 +194,7 @@ def train_RGBD_DA(net,
 
             outputs = net(rimgt, dimgt, "pretext")
 
-            loss_tp = lamda*criterion(outputs, labels)
+            loss_tp = lamda * criterion(outputs, labels)
             # old: new_loss_tp = loss_tp + ENTROPY_WEIGHT * entropy_loss(outputs)
             loss_tp.backward()
 
@@ -201,7 +203,7 @@ def train_RGBD_DA(net,
 
             # print statistics
             running_loss_m += loss_m.item()
-            running_loss_p += ((loss_sp + loss_tp).item())/lamda
+            running_loss_p += ((loss_sp + loss_tp).item()) / lamda
             if it % 100 == 99:  # print every 100 mini-batches
                 print(
                     f'[{epoch + 1}, {it + 1}] Lm {running_loss_m / 100}, Lp {running_loss_p / 100}, EntropyLoss {running_entropy / 100}')
@@ -258,7 +260,7 @@ def train_RGBD_DA(net,
 
         # CHECKPOINT
         if checkpoint_dir is not None:
-            filename = str(epoch+1)+'.ckpt'
+            filename = str(epoch + 1) + '.ckpt'
             path = os.path.join(checkpoint_dir, filename)
             torch.save({
                 'epoch': epoch,
@@ -276,10 +278,10 @@ def train_RGBD_DA(net,
         print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
     # delete checkpoints
-    #files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
-    #for f in files:
+    # files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
+    # for f in files:
     #    os.remove(f)
-    #print('Finished Training. Checkpoints deleted.')
+    # print('Finished Training. Checkpoints deleted.')
     return source_losses, target_losses, source_accs, target_accs
 
 
@@ -288,17 +290,16 @@ def RGBD_e2e(net,
              target_dataset_main,
              source_test_dataset_main,
              batch_size, num_epochs, lr, momentum, step_size, gamma, checkpoint_dir, weight_decay):
-    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
-    
+
     # Load checkpoint if available
     checkpoint = None
     if checkpoint_dir is not None:
         checkpoint = load_checkpoint(checkpoint_dir)
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
-        
+
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
@@ -321,8 +322,6 @@ def RGBD_e2e(net,
         target_accs = []
 
         print(f'No checkpoint found, starting from epoch 1')
-
-
 
     # Data loaders for training phase
     # SOURCE
@@ -445,30 +444,31 @@ def RGBD_e2e(net,
         print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
     # delete checkpoints
-    #files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
-    #for f in files:
+    # files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
+    # for f in files:
     #    os.remove(f)
-    #print('Finished Training. Checkpoints deleted.')
+    # print('Finished Training. Checkpoints deleted.')
     return source_losses, target_losses, source_accs, target_accs
 
 
 def train_sourceonly_singlemod(net, modality,
                                source_train_dataset, source_test_dataset,
-                               target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, checkpoint_dir, weight_decay):
+                               target_dataset, batch_size, lr, momentum, step_size, gamma, num_epochs, checkpoint_dir,
+                               weight_decay):
     """
   modality = RGB / depth
   """
-    
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
-    
+
     # Load checkpoint if available
     checkpoint = None
     if checkpoint_dir is not None:
         checkpoint = load_checkpoint(checkpoint_dir)
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
-    
+
     optimizer = optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
@@ -491,7 +491,6 @@ def train_sourceonly_singlemod(net, modality,
         target_accs = []
 
         print(f'No checkpoint found, starting from epoch 1')
-
 
     source_train_dataloader = DataLoader(source_train_dataset, batch_size=batch_size, shuffle=True, num_workers=4,
                                          drop_last=True)
@@ -523,13 +522,12 @@ def train_sourceonly_singlemod(net, modality,
 
             images = images.to(device)
             labels = labels.to(device)
-            
+
             if modality == 'RGB':
                 outputs = net(images, None)
-            
+
             else:
                 outputs = net(None, images)
-                
 
             loss = criterion(outputs, labels)
             loss.backward()
@@ -553,10 +551,10 @@ def train_sourceonly_singlemod(net, modality,
 
             if modality == 'RGB':
                 outputs = net(images, None)
-            
+
             else:
                 outputs = net(None, images)
-                
+
             loss = criterionFinalLoss(outputs, labels)
             source_loss += loss.item()
 
@@ -584,11 +582,10 @@ def train_sourceonly_singlemod(net, modality,
 
             if modality == 'RGB':
                 outputs = net(images, None)
-            
+
             else:
                 outputs = net(None, images)
-               
-           
+
             loss = criterionFinalLoss(outputs, labels)
             target_loss += loss.item()
 
@@ -622,8 +619,8 @@ def train_sourceonly_singlemod(net, modality,
         print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
     # delete checkpoints
-    #files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
-    #for f in files:
+    # files = glob.glob(os.path.join(checkpoint_dir, '*.ckpt'))
+    # for f in files:
     #    os.remove(f)
-    #print('Finished Training. Checkpoints deleted.')
+    # print('Finished Training. Checkpoints deleted.')
     return source_losses, target_losses, source_accs, target_accs

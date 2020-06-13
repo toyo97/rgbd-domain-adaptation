@@ -1,12 +1,14 @@
+import glob
+import os
+import os.path
+import time
+
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 from torch import optim
 from torch.backends import cudnn
 from torch.utils.data import DataLoader
-import torch.nn.functional as F
-import torch.nn as nn
-import time
-import glob
-import os
 
 
 def entropy_loss(logits):

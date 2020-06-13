@@ -47,11 +47,11 @@ def main():
 
     DATA_DIR = 'repo/rgbd-domain-adaptation.git/trunk'  # 'rgbd'
 
-    from modules.modules.datasets import TransformedDataset
-    from modules.modules.net import HAFNNet
-    import modules.modules.transforms as RGBDtransforms
-    import modules.modules.training_methods_hafn as run_train
-    from modules.modules.datasets import SynROD_ROD
+    from modules.datasets import TransformedDataset
+    from modules.net import AFNNet
+    import modules.transforms as RGBDtransforms
+    import modules.training_methods_hafn as run_train
+    from modules.datasets import SynROD_ROD
 
     imgnet_mean, imgnet_std = (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
     train_transform = RGBDtransforms.RGBDCompose([transforms.Resize((256, 256)),
@@ -97,7 +97,7 @@ def main():
     target_train_dataset_main = TransformedDataset(target_dataset, train_transform)
     target_test_dataset_main = TransformedDataset(target_dataset, val_transform)
 
-    net = HAFNNet(NUM_CLASSES, dropout_p=0.5)
+    net = AFNNet(NUM_CLASSES, dropout_p=0.5)
     time_elapsed = time.time() - since
     print('Time to create dataset: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
