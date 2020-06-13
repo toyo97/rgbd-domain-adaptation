@@ -77,7 +77,6 @@ def tuning():
     target_dataset_main = TransformedDataset(target_dataset, val_transform)
     target_dataset_pretext = TransformedDataset(target_dataset, val_transform_rotation)
 
-    net = Net(NUM_CLASSES, MODALITY)
     time_elapsed = time.time() - since
     print('Time to create dataset: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
@@ -90,6 +89,7 @@ def tuning():
     params_list = random.sample(list(param_grid), 10)
     for modality in ['RGB', 'depth']:
         for i, params in enumerate(params_list):
+            net = Net(NUM_CLASSES, modality)
             state_dict = {'params': params}
             # results = train_losses, val_losses, train_accs, val_accs
             state_dict['results'] = run_train.train_sourceonly_singlemod(net, modality, source_train_dataset_main,
@@ -109,6 +109,7 @@ def tuning():
 
     # E2E
     for i, params in enumerate(params_list):
+        net = Net(NUM_CLASSES)
         state_dict = {'params': params}
         state_dict['results'] = run_train.train_sourceonly_singlemod(net,
                                                                      source_train_dataset_main,
