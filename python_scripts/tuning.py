@@ -13,7 +13,7 @@ def tuning():
     NUM_CLASSES = 47
     WEIGHT_DECAY = 0.05
 
-    NUM_EPOCHS = 40
+    NUM_EPOCHS = 10
 
     LR = 0.0003
     MOMENTUM = 0.9
