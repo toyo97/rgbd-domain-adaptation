@@ -101,7 +101,7 @@ def tuning():
                                                                          None,
                                                                          WEIGHT_DECAY)
 
-            res_file = open(f'tuning/source_only_{modality}/res_{i}.obj', 'w')
+            res_file = open(f'tuning/source_only_{modality}/res_{i}.obj', 'wb')
             pickle.dump(state_dict, res_file)
             # LOAD
             # file_pi2 = open('filename_pi.obj', 'r')
@@ -117,7 +117,7 @@ def tuning():
                                                                      BATCH_SIZE, NUM_EPOCHS, params['lr'], MOMENTUM, params['step_size'],
                                                                      params['gamma'], None, WEIGHT_DECAY)
 
-        res_file = open(f'tuning/source_only_e2e/res_{i}.obj', 'w')
+        res_file = open(f'tuning/source_only_e2e/res_{i}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
 
