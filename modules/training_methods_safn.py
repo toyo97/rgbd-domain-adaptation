@@ -63,7 +63,7 @@ def RGBD_e2e_SAFN(net,
                   source_test_dataset_main,
                   target_test_dataset_main,
                   batch_size, num_epochs, lr, momentum, step_size, gamma, checkpoint_dir, weight_decay,
-                  dr, weight_L2norm, entropy):
+                  dr, weight_L2norm, entropy, entropy_weight):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
 
@@ -165,7 +165,7 @@ def RGBD_e2e_SAFN(net,
             loss = s_cls_loss + s_fc2_ring_loss + t_fc2_ring_loss
 
             if entropy:
-                loss += entropy_loss(outputs)
+                loss += entropy_weight * entropy_loss(outputs)
 
             loss.backward()
 
@@ -255,7 +255,7 @@ def train_sourceonly_singlemod_SAFN(net, modality,
                                     target_test_dataset_main,
                                     batch_size, lr, momentum, step_size, gamma, num_epochs, checkpoint_dir,
                                     weight_decay,
-                                    dr, weight_L2norm, entropy):
+                                    dr, weight_L2norm, entropy, entropy_weight):
     """
   modality = RGB / depth
   """
@@ -371,7 +371,7 @@ def train_sourceonly_singlemod_SAFN(net, modality,
             loss = s_cls_loss + s_fc2_ring_loss + t_fc2_ring_loss
 
             if entropy:
-                loss += entropy_loss(outputs)
+                loss += entropy_weight * entropy_loss(outputs)
 
             loss.backward()
             optimizer.step()  # update weights
