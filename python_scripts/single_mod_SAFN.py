@@ -1,28 +1,8 @@
 #!/usr/bin/env python
-import torch
-import torchvision
-from torchvision import transforms
-import torch.optim as optim
-import torch.nn as nn
-from torch.utils.data import Subset, DataLoader
-from torch.utils.data.dataset import random_split
-from torch.backends import cudnn
 import time
-import os
-from getpass import getpass
-import urllib
-from torch.utils.data import DataLoader
 
-import tqdm
-from torchvision.datasets import VisionDataset
-from torch.utils.data import Dataset
-from PIL import Image
-import os
-import os.path
-
-from torchvision import models
-from torch.autograd import Function
-import copy
+import torch
+from torchvision import transforms
 
 
 def main():
