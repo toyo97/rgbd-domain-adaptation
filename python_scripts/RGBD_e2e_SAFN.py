@@ -18,7 +18,7 @@ def main():
     MOMENTUM = 0.9
     STEP_SIZE = 10
     GAMMA = 1
-
+    ENTROPY_WEIGHT = 0.1
     BATCH_SIZE = 64
 
     DELTAR = 1.0
@@ -91,7 +91,7 @@ def main():
                                                                              WEIGHT_DECAY,
                                                                              dr=DELTAR,
                                                                              weight_L2norm=WEIGHT_L2NORM,
-                                                                             entropy=ENTROPY)
+                                                                             entropy=ENTROPY, ENTROPY_WEIGHT)
 
 
 if __name__ == "__main__":
