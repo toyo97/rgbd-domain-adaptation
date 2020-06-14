@@ -199,4 +199,5 @@ for epoch in range(epoch0, args.epochs):
 
 result = source_losses, target_losses, source_accs, target_accs
 # save the results
-pickle.dump(result, open(args.result_dir, 'wb'))
+pickle.dump(result, open(os.path.join(args.result_dir, "result"), 'wb'))
+pickle.dump(args, open(os.path.join(args.result_dir, "args"), 'wb'))
