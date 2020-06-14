@@ -13,7 +13,7 @@ def main():
     WEIGHT_DECAY = 0.05
 
     NUM_EPOCHS = 40
-
+    ENTROPY_WEIGHT = 0.1
     LR = 0.0003
     MOMENTUM = 0.9
     STEP_SIZE = 10
@@ -95,7 +95,7 @@ def main():
                                                                                                WEIGHT_DECAY,
                                                                                                dr=DELTAR,
                                                                                                weight_L2norm=WEIGHT_L2NORM,
-                                                                                               entropy=ENTROPY)
+                                                                                               entropy=ENTROPY, ENTROPY_WEIGHT)
 
 
 if __name__ == "__main__":
