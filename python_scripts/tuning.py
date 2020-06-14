@@ -111,7 +111,7 @@ def tuning():
     for i, params in enumerate(params_list):
         net = Net(NUM_CLASSES)
         state_dict = {'params': params}
-        state_dict['results'] = run_train.train_sourceonly_singlemod(net,
+        state_dict['results'] = run_train.RGBD_e2e(net,
                                                                      source_train_dataset_main,
                                                                      target_dataset_main,
                                                                      source_test_dataset_main,
