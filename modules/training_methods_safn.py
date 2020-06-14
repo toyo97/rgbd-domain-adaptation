@@ -68,8 +68,9 @@ def RGBD_e2e_SAFN(net,
     net = net.to(device)
 
     # Load checkpoint if available
-    checkpoint = load_checkpoint(checkpoint_dir)
-
+    checkpoint = None
+    if checkpoint_dir is not None:
+        checkpoint = load_checkpoint(checkpoint_dir)
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
 
@@ -264,8 +265,9 @@ def train_sourceonly_singlemod_SAFN(net, modality,
     net = net.to(device)
 
     # Load checkpoint if available
-    checkpoint = load_checkpoint(checkpoint_dir)
-
+    checkpoint = None
+    if checkpoint_dir is not None:
+        checkpoint = load_checkpoint(checkpoint_dir)
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
 
@@ -471,7 +473,7 @@ def train_RGBD_DA_SAFN(net, source_train_dataset_main, source_train_dataset_pret
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
 
-    # Load checkpoint if available
+   # Load checkpoint if available
     checkpoint = None
     if checkpoint_dir is not None:
         checkpoint = load_checkpoint(checkpoint_dir)
