@@ -10,24 +10,6 @@ import pickle
 def tuning():
     since = time.time()
 
-    NUM_CLASSES = 47
-    WEIGHT_DECAY = 0.05
-
-    NUM_EPOCHS = 10
-    DR = 1
-    LR = 0.0003
-    MOMENTUM = 0.9
-    STEP_SIZE = 10
-    GAMMA = 1
-    LAMBDA = 1
-    ENTROPY_WEIGHT = 0.1
-
-    WEIGHT_L2NORM = 0.05
-    BATCH_SIZE = 32
-
-    params = {"dr":1, "weight_decay": WEIGHT_DECAY, "lr": LR, "entropy_weight": ENTROPY_WEIGHT, "weight_l2norm": WEIGHT_L2NORM, "batch_size": BATCH_SIZE}
-    MODALITY = "RGB"
-
     DATA_DIR = 'repo/rgbd-domain-adaptation.git/trunk'  # 'rgbd'
 
     from modules.datasets import TransformedDataset
@@ -87,44 +69,11 @@ def tuning():
     time_elapsed = time.time() - since
     print('Time to create dataset: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
-    for modality in ['RGB', 'depth']:
-        net = AFNNet(NUM_CLASSES, modality)
-        state_dict = {'params': params}
-        # results = train_losses, val_losses, train_accs, val_accs
-        state_dict['results'] = run_train_safn.train_sourceonly_singlemod_SAFN(net, modality,source_train_dataset_main,
-                                                                                target_dataset_main_entropy_loss,
-                                                                                source_test_dataset_main,
-                                                                                target_dataset_main,
-                                                                                BATCH_SIZE, LR, MOMENTUM, STEP_SIZE, GAMMA, 20, None,WEIGHT_DECAY,DR, WEIGHT_L2NORM,
-                                                                                True, ENTROPY_WEIGHT)
-
-        res_file = open(f'tuning/onlySAFN_{modality}/DEFAULT/default_params.obj', 'wb')
-        pickle.dump(state_dict, res_file)
-        # LOAD
-        # file_pi2 = open('filename_pi.obj', 'r')
-        # object_pi2 = pickle.load(file_pi2)tuning/onlySAFN_RGB
-
-
-    net = AFNNet(NUM_CLASSES)
-    state_dict = {'params': params}
-    state_dict['results'] = run_train_safn.RGBD_e2e_SAFN(net,
-                                                        source_train_dataset_main,
-                                                        target_dataset_main_entropy_loss,
-                                                        source_test_dataset_main,
-                                                        target_dataset_main,
-                                                        BATCH_SIZE, 20, LR, MOMENTUM, STEP_SIZE, GAMMA, None, WEIGHT_DECAY,
-                                                        DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
-
-    res_file = open(f'tuning/onlySAFN_e2e/DEFAULT/default_params.obj', 'wb')
-    pickle.dump(state_dict, res_file)
-
-
-
     NUM_CLASSES = 47
     WEIGHT_DECAY = 0.05
 
     NUM_EPOCHS = 10
-
+    DR = 1
     LR = 0.0003
     MOMENTUM = 0.9
     STEP_SIZE = 10
@@ -132,27 +81,35 @@ def tuning():
     LAMBDA = 1
     ENTROPY_WEIGHT = 0.1
 
-    BATCH_SIZE = 64
+    WEIGHT_L2NORM = 0.05
+    BATCH_SIZE = 32
 
+    param_grid = ParameterGrid([
+            {"weight_decay": [0.05, 0.005, 0.0005],
+             'lr': np.logspace(-2, -5, 50),
+             'lamda': [1, 0.8, 0.5],
+             'weight_L2norm': [0.1, 0.05, 0.01],
+             'entropy_weight': [0.1, 0.2, 0.05]
+            #,'step_size': np.arange(2, 8),
+            #'gamma': [0.3, 0.1, 0.05, 0.02]
+            }
+        ])
 
-    for i, wd in enumerate([0.05, 0.005, 0.0005]):
-        net = Net(NUM_CLASSES)
-        state_dict = {'wd': wd}
+    params_list = random.sample(list(param_grid), 10)
+
+    for i, params in enumerate(params_list):
+        net = AFNNet(NUM_CLASSES)
+        state_dict = {'params': params}
         # results = train_losses, val_losses, train_accs, val_accs
-        state_dict['results'] = run_train.train_RGBD_DA(net,
-                                                        source_train_dataset_main, source_train_dataset_pretext,
-                                                        target_dataset_main, target_dataset_pretext,
-                                                        source_test_dataset_main, source_test_dataset_pretext,
-                                                        BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA,
-                                                        ENTROPY_WEIGHT, LAMBDA, None,
-                                                        wd, target_dataset_main_entropy_loss)
-
-        res_file = open(f'tuning/RGBD_DA/DEFAULT/res{i}.obj', 'wb')
+        state_dict['results'] = run_train_safn.train_RGBD_DA_SAFN(net, source_train_dataset_main, source_train_dataset_pretext, target_dataset_main,
+                                                                  target_dataset_pretext, target_dataset_main_entropy_loss, source_test_dataset_main, BATCH_SIZE,
+                                                                  NUM_EPOCHS, params["lr"], MOMENTUM, STEP_SIZE, GAMMA, params["entropy_weight"], params["lamda"], None,
+                                                                  params["weight_decay"], DR, params["weight_L2norm"])
+        res_file = open(f'tuning/SAFN_RR/res_{i}.obj', 'wb')
         pickle.dump(state_dict, res_file)
         # LOAD
         # file_pi2 = open('filename_pi.obj', 'r')
         # object_pi2 = pickle.load(file_pi2)
-
 
 
 if __name__ == '__main__':
