@@ -520,10 +520,11 @@ def train_RGBD_DA_SAFN(net, source_train_dataset_main, source_train_dataset_pret
     target_pretext_dataloader = DataLoader(target_dataset_pretext, batch_size=batch_size, shuffle=True, num_workers=1,
                                            drop_last=True)
 
+    # Data loaders used in validation (drop_last = False)
+
     target_validation_dataloader = DataLoader(target_dataset_main, batch_size=batch_size, shuffle=True, num_workers=1,
                                               drop_last=False)
 
-    # used in validation (drop_last = False)
     source_test_main_dataloader = DataLoader(source_test_dataset_main, batch_size=batch_size, shuffle=True,
                                              num_workers=1,
                                              drop_last=False)
@@ -533,7 +534,7 @@ def train_RGBD_DA_SAFN(net, source_train_dataset_main, source_train_dataset_pret
 
     cudnn.benchmark = True
 
-    NUM_ITER = max(len(source_train_dataset_main), len(target_dataset_main)) // batch_size
+    NUM_ITER = max(len(source_train_dataset_main), len(target_dataset_main_ent)) // batch_size
 
     for epoch in range(epoch0, num_epochs):  # loop over the dataset multiple times
         print(f'Epoch {epoch + 1}/{num_epochs}')
@@ -648,7 +649,7 @@ def train_RGBD_DA_SAFN(net, source_train_dataset_main, source_train_dataset_pret
             images_d = images_d.to(device)
             labels = labels.to(device)
 
-            outputs = net(images_rgb, images_d)
+            _, outputs = net(images_rgb, images_d)
             loss = criterionFinalLoss(outputs, labels)
             source_loss += loss.item()
 
@@ -670,7 +671,7 @@ def train_RGBD_DA_SAFN(net, source_train_dataset_main, source_train_dataset_pret
             images_d = images_d.to(device)
             labels = labels.to(device)
 
-            outputs = net(images_rgb, images_d)
+            _, outputs = net(images_rgb, images_d)
             loss = criterionFinalLoss(outputs, labels)
             target_loss += loss.item()
 
