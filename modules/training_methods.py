@@ -113,7 +113,7 @@ def train_RGBD_DA(net,
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    cudnn.benchmark
+    cudnn.benchmark = True
 
     NUM_ITER = max(len(source_train_dataset_main), len(target_dataset_main)) // batch_size
 
@@ -340,7 +340,7 @@ def RGBD_e2e(net,
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    cudnn.benchmark
+    cudnn.benchmark = True
 
     for epoch in range(epoch0, num_epochs):  # loop over the dataset multiple times
         print(f'Epoch {epoch + 1}/{num_epochs}')
@@ -503,7 +503,7 @@ def train_sourceonly_singlemod(net, modality,
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    cudnn.benchmark
+    cudnn.benchmark = True
 
     for epoch in range(epoch0, num_epochs):
         print('Starting epoch {}/{}'.format(epoch + 1, num_epochs))
