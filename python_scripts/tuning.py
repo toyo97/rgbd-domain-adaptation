@@ -110,13 +110,11 @@ def tuning():
     for i, params in enumerate(params_list):
         net = Net(NUM_CLASSES)
         state_dict = {'params': params}
-        state_dict['results'] = run_train.train_sourceonly_singlemod(net,
-                                                                     source_train_dataset_main,
-                                                                     target_dataset_main,
-                                                                     source_test_dataset_main,
-                                                                     BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM,
-                                                                     STEP_SIZE,
-                                                                     GAMMA, None, WEIGHT_DECAY)
+        state_dict['results'] = run_train.RGBD_e2e(net,
+                                                 source_train_dataset_main,
+                                                 target_dataset_main,
+                                                 source_test_dataset_main,
+                                                 BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, None, WEIGHT_DECAY)
 
         res_file = open(f'tuning/baseline/e2e/default_params.obj', 'wb')
         pickle.dump(state_dict, res_file)
