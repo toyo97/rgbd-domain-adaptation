@@ -86,7 +86,7 @@ def tuning():
 
     WEIGHT_L2NORM = 0.05
 
-    params = {'lr':LR, 'weight_decay': WEIGHT_DECAY}
+    params = {'lr': LR, 'weight_decay': WEIGHT_DECAY}
 
     #BASELINE DEFAULT PARAMS
     for modality in ['RGB', 'depth']:
@@ -107,25 +107,16 @@ def tuning():
         pickle.dump(state_dict, res_file)
     
     # E2E
-    for i, params in enumerate(params_list):
-        net = Net(NUM_CLASSES)
-        state_dict = {'params': params}
-        state_dict['results'] = run_train.RGBD_e2e(net,
-                                                 source_train_dataset_main,
-                                                 target_dataset_main,
-                                                 source_test_dataset_main,
-                                                 BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, None, WEIGHT_DECAY)
+    net = Net(NUM_CLASSES)
+    state_dict = {'params': params}
+    state_dict['results'] = run_train.RGBD_e2e(net,
+                                             source_train_dataset_main,
+                                             target_dataset_main,
+                                             source_test_dataset_main,
+                                             BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, None, WEIGHT_DECAY)
 
-        res_file = open(f'tuning/baseline/e2e/default_params.obj', 'wb')
-        pickle.dump(state_dict, res_file)
-        
-
-
-    """param_grid = ParameterGrid([
-        {'lr': np.logspace(-2, -5, 50),
-         'step_size': np.arange(2, 8),
-         'gamma': [0.3, 0.1, 0.05, 0.02]}
-    ])"""
+    res_file = open(f'tuning/baseline/e2e/default_params.obj', 'wb')
+    pickle.dump(state_dict, res_file)
 
     params = {'gamma': 0.05, 'lr': 6.250551925273976e-05, 'step_size': 7}
 
@@ -179,25 +170,32 @@ def tuning():
         res_file = open(f'tuning/MANU/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
-    params = {'gamma': 0.05, 'lr': 0.005689866028018299, 'step_size': 5}
+    params = {'dr': 1, 'weight_decay': 0.05, 'lr': 0.005689866028018299, 'step_size': 5, 'gamma':0.05, 'entropy_weight': 0.1, 'weight_l2norm': 0.05, 'batch_size': 32}
 
     for run in range(5):
         net = Net(NUM_CLASSES, "depth")
         state_dict = {'params': params}
-        state_dict['results'] = run_train.train_sourceonly_singlemod(net, "depth", source_train_dataset_main,
-                                                                     source_test_dataset_main,
-                                                                     target_dataset_main,
-                                                                     BATCH_SIZE, params['lr'], MOMENTUM,
-                                                                     params['step_size'], params['gamma'],
-                                                                     NUM_EPOCHS,
-                                                                     None,
-                                                                     WEIGHT_DECAY)
+        state_dict['results'] = run_train_safn.train_sourceonly_singlemod_SAFN(net, "depth",
+                                                                                source_train_dataset_main,
+                                                                                target_dataset_main_entropy_loss,
+                                                                                source_test_dataset_main,
+                                                                                target_dataset_main,
+                                                                                params["batch_size"], params["lr"], MOMENTUM, params["step_size"], params["gamma"], 10, None,
+                                                                                params["weight_decay"],
+                                                                                params["dr"], params["weight_l2norm"], True, params["entropy_weight"])
 
-        res_file = open(f'tuning/baseline/{modality}only/final_results/res_{run}.obj', 'wb')
+        res_file = open(f'tuning/MANU/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
 
-    """for i, params in enumerate(params_list):
+    """
+    param_grid = ParameterGrid([
+        {'lr': np.logspace(-2, -5, 50),
+         'step_size': np.arange(2, 8),
+         'gamma': [0.3, 0.1, 0.05, 0.02]}
+    ])
+    
+    for i, params in enumerate(params_list):
         net = Net(NUM_CLASSES)
         state_dict = {'params': params}
         # results = train_losses, val_losses, train_accs, val_accs
