@@ -90,7 +90,7 @@ def tuning():
 
     #BASELINE DEFAULT PARAMS
     for modality in ['RGB', 'depth']:
-       
+
         net = Net(NUM_CLASSES, modality)
         state_dict = {'params': params}
         # results = train_losses, val_losses, train_accs, val_accs
@@ -103,9 +103,9 @@ def tuning():
                                                                      None,
                                                                      WEIGHT_DECAY)
 
-        res_file = open(f'tuning/baseline/{modality}/default_params.obj', 'wb')
+        res_file = open(f'final_results/sourceonly/{modality}/default_params.obj', 'wb')
         pickle.dump(state_dict, res_file)
-    
+
     # E2E
     net = Net(NUM_CLASSES)
     state_dict = {'params': params}
@@ -115,7 +115,7 @@ def tuning():
                                              source_test_dataset_main,
                                              BATCH_SIZE, NUM_EPOCHS, LR, MOMENTUM, STEP_SIZE, GAMMA, None, WEIGHT_DECAY)
 
-    res_file = open(f'tuning/baseline/e2e/default_params.obj', 'wb')
+    res_file = open(f'final_results/sourceonly/e2e/default_params.obj', 'wb')
     pickle.dump(state_dict, res_file)
 
     params = {'gamma': 0.05, 'lr': 6.250551925273976e-05, 'step_size': 7}
@@ -133,7 +133,7 @@ def tuning():
                                                                      None,
                                                                      WEIGHT_DECAY)
 
-        res_file = open(f'tuning/baseline/{modality}only/final_results/res_{run}.obj', 'wb')
+        res_file = open(f'final_results/sourceonly/RGB/5runs/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
     params = {'gamma': 0.05, 'lr': 0.008685113737513529, 'step_size': 5}
@@ -150,7 +150,7 @@ def tuning():
                                                                      None,
                                                                      WEIGHT_DECAY)
 
-        res_file = open(f'tuning/baseline/{modality}only/final_results/res_{run}.obj', 'wb')
+        res_file = open(f'final_results/sourceonly/depth/5runs/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
     params = {'dr': 1, 'weight_decay': 0.05, 'lr': 0.0003, 'entropy_weight': 0.1, 'weight_l2norm': 0.05, 'batch_size': 32}
@@ -167,13 +167,13 @@ def tuning():
                                                                                 params["weight_decay"],
                                                                                 params["dr"], params["weight_l2norm"], True, params["entropy_weight"])
 
-        res_file = open(f'tuning/MANU/res_{run}.obj', 'wb')
+        res_file = open(f'final_results/sourceonly/SAFN/RGB/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
     params = {'dr': 1, 'weight_decay': 0.05, 'lr': 0.005689866028018299, 'step_size': 5, 'gamma':0.05, 'entropy_weight': 0.1, 'weight_l2norm': 0.05, 'batch_size': 32}
 
     for run in range(5):
-        net = Net(NUM_CLASSES, "depth")
+        net = AFNNet(NUM_CLASSES, "depth")
         state_dict = {'params': params}
         state_dict['results'] = run_train_safn.train_sourceonly_singlemod_SAFN(net, "depth",
                                                                                 source_train_dataset_main,
@@ -184,7 +184,7 @@ def tuning():
                                                                                 params["weight_decay"],
                                                                                 params["dr"], params["weight_l2norm"], True, params["entropy_weight"])
 
-        res_file = open(f'tuning/MANU/res_{run}.obj', 'wb')
+        res_file = open(f'final_results/sourceonly/SAFN/depth/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
 
@@ -194,7 +194,7 @@ def tuning():
          'step_size': np.arange(2, 8),
          'gamma': [0.3, 0.1, 0.05, 0.02]}
     ])
-    
+
     for i, params in enumerate(params_list):
         net = Net(NUM_CLASSES)
         state_dict = {'params': params}
