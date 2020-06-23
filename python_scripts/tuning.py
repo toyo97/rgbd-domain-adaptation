@@ -91,7 +91,7 @@ def tuning():
     params = {'gamma': 0.1, 'lr': 0.00029470517025518097, 'step_size': 2}
 
 
-    # E2E
+    # E2E source only
     for run in range(5):
         net = Net(NUM_CLASSES)
         state_dict = {'params': params}
