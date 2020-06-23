@@ -115,7 +115,7 @@ def RGBD_e2e_HAFN(net,
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    cudnn.benchmark
+    cudnn.benchmark = True
 
     NUM_ITER = max(len(source_train_dataset_main), len(target_train_dataset_main)) // batch_size
 
@@ -305,7 +305,7 @@ def train_sourceonly_singlemod_HAFN(net, modality,
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    cudnn.benchmark
+    cudnn.benchmark =True
 
     NUM_ITER = max(len(source_train_dataset_main), len(target_train_dataset_main)) // batch_size
 
