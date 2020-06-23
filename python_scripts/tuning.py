@@ -52,9 +52,9 @@ def tuning():
                                                          transforms.Normalize(mean=imgnet_mean,
                                                                               std=imgnet_std)]
                                                         )
-    source_train_dataset = SynROD_ROD(DATA_DIR, category="synROD", RAM=True, split="train")
-    source_test_dataset = SynROD_ROD(DATA_DIR, category="synROD", RAM=True, split="test")
-    target_dataset = SynROD_ROD(DATA_DIR, category="ROD", RAM=True)
+    source_train_dataset = SynROD_ROD(DATA_DIR, category="synROD", RAM=False, split="train")
+    source_test_dataset = SynROD_ROD(DATA_DIR, category="synROD", RAM=False, split="test")
+    target_dataset = SynROD_ROD(DATA_DIR, category="ROD", RAM=False)
 
     source_train_dataset_main = TransformedDataset(source_train_dataset, train_transform)
     source_train_dataset_pretext = TransformedDataset(source_train_dataset, train_transform_rotation)
@@ -101,7 +101,7 @@ def tuning():
                                                  source_test_dataset_main,
                                                  BATCH_SIZE, NUM_EPOCHS, params["lr"], MOMENTUM, params["step_size"], params["gamma"], None, WEIGHT_DECAY)
 
-        res_file = open(f'final_results/MANU/default_params.obj', 'wb')
+        res_file = open(f'final_results/sourceonlye2e/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
 
@@ -123,7 +123,7 @@ def tuning():
                   BATCH_SIZE, NUM_EPOCHS, params["lr"], MOMENTUM, params["step_size"], params["gamma"], None, WEIGHT_DECAY,
                   DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
 
-        res_file = open(f'final_results/MANU/res_{run}.obj', 'wb')
+        res_file = open(f'final_results/SAFNe2e/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
 
@@ -150,7 +150,7 @@ def tuning():
                                     WEIGHT_DECAY,
                                     RADIUS, WEIGHT_L2NORM, 0.5)
 
-            res_file = open(f'tuning/MANU/HAFN/{modality}/res_{i}.obj', 'wb')
+            res_file = open(f'final_results/HAFN/{modality}/res_{i}.obj', 'wb')
             pickle.dump(state_dict, res_file)
             # LOAD
             # file_pi2 = open('filename_pi.obj', 'r')
@@ -168,7 +168,7 @@ def tuning():
                   BATCH_SIZE, NUM_EPOCHS, params["lr"], MOMENTUM, params["step_size"], params["gamma"], None, WEIGHT_DECAY,
                   RADIUS, WEIGHT_L2NORM, 0.5)
 
-        res_file = open(f'tuning/MANU/HAFN/e2e/res_{i}.obj', 'wb')
+        res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
 
@@ -186,9 +186,10 @@ def tuning():
 
 
 
-    
+
 
 
 
 if __name__ == '__main__':
     tuning()
+
