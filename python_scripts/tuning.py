@@ -52,9 +52,9 @@ def tuning():
                                                          transforms.Normalize(mean=imgnet_mean,
                                                                               std=imgnet_std)]
                                                         )
-    source_train_dataset = SynROD_ROD(DATA_DIR, category="synROD", RAM=False, split="train")
-    source_test_dataset = SynROD_ROD(DATA_DIR, category="synROD", RAM=False, split="test")
-    target_dataset = SynROD_ROD(DATA_DIR, category="ROD", RAM=False)
+    source_train_dataset = SynROD_ROD(DATA_DIR, category="synROD", RAM=True, split="train")
+    source_test_dataset = SynROD_ROD(DATA_DIR, category="synROD", RAM=True, split="test")
+    target_dataset = SynROD_ROD(DATA_DIR, category="ROD", RAM=True)
 
     source_train_dataset_main = TransformedDataset(source_train_dataset, train_transform)
     source_train_dataset_pretext = TransformedDataset(source_train_dataset, train_transform_rotation)
@@ -192,4 +192,3 @@ def tuning():
 
 if __name__ == '__main__':
     tuning()
-

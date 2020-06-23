@@ -65,8 +65,9 @@ def RGBD_e2e_HAFN(net,
     net = net.to(device)
 
     # Load checkpoint if available
-    checkpoint = load_checkpoint(checkpoint_dir)
-
+    checkpoint = None
+    if checkpoint_dir is not None:
+        checkpoint = load_checkpoint(checkpoint_dir)
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
 
@@ -257,8 +258,9 @@ def train_sourceonly_singlemod_HAFN(net, modality,
     net = net.to(device)
 
     # Load checkpoint if available
-    checkpoint = load_checkpoint(checkpoint_dir)
-
+    checkpoint = None
+    if checkpoint_dir is not None:
+        checkpoint = load_checkpoint(checkpoint_dir)
     if checkpoint is not None:
         net.load_state_dict(checkpoint['net'])
 
