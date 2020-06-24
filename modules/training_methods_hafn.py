@@ -222,19 +222,20 @@ def RGBD_e2e_HAFN(net,
         scheduler.step()
 
         # CHECKPOINT
-        filename = str(epoch + 1) + '.ckpt'
-        path = os.path.join(checkpoint_dir, filename)
-        torch.save({
-            'epoch': epoch,
-            'source_losses': source_losses,
-            'source_accs': source_accs,
-            'target_losses': target_losses,
-            'target_accs': target_accs,
-            'net': net.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'scheduler': scheduler.state_dict()
-        }, path)
-        print(f'Checkpoint {epoch + 1} saved succesfully')
+        if checkpoint_dir is not None:
+            filename = str(epoch + 1) + '.ckpt'
+            path = os.path.join(checkpoint_dir, filename)
+            torch.save({
+                'epoch': epoch,
+                'source_losses': source_losses,
+                'source_accs': source_accs,
+                'target_losses': target_losses,
+                'target_accs': target_accs,
+                'net': net.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'scheduler': scheduler.state_dict()
+            }, path)
+            print(f'Checkpoint {epoch + 1} saved succesfully')
 
         time_elapsed = time.time() - since
         print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
@@ -435,19 +436,20 @@ def train_sourceonly_singlemod_HAFN(net, modality,
         scheduler.step()
 
         # CHECKPOINT
-        filename = modality + str(epoch + 1) + '.ckpt'
-        path = os.path.join(checkpoint_dir, filename)
-        torch.save({
-            'epoch': epoch,
-            'source_losses': source_losses,
-            'source_accs': source_accs,
-            'target_losses': target_losses,
-            'target_accs': target_accs,
-            'net': net.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'scheduler': scheduler.state_dict()
-        }, path)
-        print(f'Checkpoint {epoch + 1} saved succesfully')
+        if checkpoint_dir is not None:
+            filename = str(epoch + 1) + '.ckpt'
+            path = os.path.join(checkpoint_dir, filename)
+            torch.save({
+                'epoch': epoch,
+                'source_losses': source_losses,
+                'source_accs': source_accs,
+                'target_losses': target_losses,
+                'target_accs': target_accs,
+                'net': net.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'scheduler': scheduler.state_dict()
+            }, path)
+            print(f'Checkpoint {epoch + 1} saved succesfully')
 
         time_elapsed = time.time() - since
         print('Time to complete the epoch: {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
