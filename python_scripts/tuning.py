@@ -87,48 +87,62 @@ def tuning():
 
     WEIGHT_L2NORM = 0.05
     DR = 1
+    RADIUS = 25
 
-    params = {'gamma': 0.1, 'lr': 0.00029470517025518097, 'step_size': 2}
+    # Relative rotation run with best results first tuning + wd 5e-4
 
+    params = {'gamma': 0.02, 'lr': 0.00014563484775012445, 'step_size': 3}
 
-    # E2E source only
-    for run in range(5):
-        net = Net(NUM_CLASSES)
-        state_dict = {'params': params}
-        state_dict['results'] = run_train.RGBD_e2e(net,
-                                                 source_train_dataset_main,
-                                                 target_dataset_main,
-                                                 source_test_dataset_main,
-                                                 BATCH_SIZE, NUM_EPOCHS, params["lr"], MOMENTUM, params["step_size"], params["gamma"], None, WEIGHT_DECAY)
+    net = Net(NUM_CLASSES)
+    state_dict = {'params': params}
+    state_dict['results'] = run_train.train_RGBD_DA(net,
+                                                    source_train_dataset_main, source_train_dataset_pretext,
+                                                    target_dataset_main, target_dataset_pretext,
+                                                    source_test_dataset_main, source_test_dataset_pretext,
+                                                    BATCH_SIZE, NUM_EPOCHS, params["lr"], MOMENTUM, params["step_size"],
+                                                    params["gamma"], ENTROPY_WEIGHT, LAMBDA, None,
+                                                    0.0005, target_dataset_main_entropy_loss)
 
-        res_file = open(f'final_results/sourceonlye2e/res_{run}.obj', 'wb')
-        pickle.dump(state_dict, res_file)
+    res_file = open(f'final_results/MANU/res.obj', 'wb')
+    pickle.dump(state_dict, res_file)
 
+    param_grid = ParameterGrid([
+        {"weight_decay": [0.05, 0.005, 0.0005],
+         'lr': np.logspace(-2, -5, 50),
+         'lamda': [1, 0.8, 0.5],
+         'weight_L2norm': [0.1, 0.05, 0.01],
+         'entropy_weight': [0.1, 0.2, 0.05]
+         # ,'step_size': np.arange(2, 8),
+         # 'gamma': [0.3, 0.1, 0.05, 0.02]
+         }
+    ])
 
+    # Tuning HAFN+RR
 
-
-    # DEFAULT PARAMETERS AFN
     BATCH_SIZE = 32
-    params = {'gamma': 0.3, 'lr': 0.0005179474679231213, 'step_size': 3}
-
-    for run in range(5):
-
+    params_list = random.sample(list(param_grid), 10)
+    for i, params in enumerate(params_list):
         net = AFNNet(NUM_CLASSES)
-        state_dict = {'params': params}
-        state_dict['results'] = run_train_safn.RGBD_e2e_SAFN(net,
-                  source_train_dataset_main,
-                  target_dataset_main_entropy_loss,
-                  source_test_dataset_main,
-                  target_dataset_main,
-                  BATCH_SIZE, NUM_EPOCHS, params["lr"], MOMENTUM, params["step_size"], params["gamma"], None, WEIGHT_DECAY,
-                  DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
 
-        res_file = open(f'final_results/SAFNe2e/res_{run}.obj', 'wb')
+        state_dict = {'params': params}
+
+        state_dict['results'] = run_train_hafn.train_RGBD_DA_HAFN(net, source_train_dataset_main,
+                                                                  source_train_dataset_pretext, target_dataset_main,
+                                                                  target_dataset_pretext,
+                                                                  target_dataset_main_entropy_loss,
+                                                                  source_test_dataset_main, BATCH_SIZE,
+                                                                  NUM_EPOCHS, params["lr"], MOMENTUM, STEP_SIZE, GAMMA,
+                                                                  params["entropy_weight"], params["lamda"], None,
+                                                                  params["weight_decay"],
+                                                                  RADIUS, params["weight_L2norm"])
+
+        res_file = open(f'final_results/MANU/res_{i}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
-
+    """
     # HAFN
     RADIUS = 25
+    BATCH_SIZE = 32
     param_grid = ParameterGrid([
         {'lr': np.logspace(-2, -5, 50),
          'step_size': np.arange(2, 8),
@@ -170,7 +184,7 @@ def tuning():
 
         res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
         pickle.dump(state_dict, res_file)
-
+    """
 
     """ Parametri per Relative rotation
     param_grid = ParameterGrid([
@@ -183,11 +197,6 @@ def tuning():
              #'gamma': [0.3, 0.1, 0.05, 0.02]
              }
          ])"""
-
-
-
-
-
 
 
 if __name__ == '__main__':
