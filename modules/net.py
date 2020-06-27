@@ -296,7 +296,7 @@ class ablationAFNNet(nn.Module):
         @param single_mod: specify `RGB` or `depth` if only one modality is being passed through the network
                         otherwise leave it to None
         """
-        super(AFNNet, self).__init__()
+        super(ablationAFNNet, self).__init__()
 
         if single_mod not in ['RGB', 'depth', None]:
             raise ValueError('single_mod parameter not valid. Please choose between `RGB` or `depth`, otherwise leave '
