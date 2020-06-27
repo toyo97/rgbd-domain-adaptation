@@ -315,7 +315,7 @@ def train_sourceonly_singlemod_SAFN(net, modality,
     criterion = nn.CrossEntropyLoss()
     criterionFinalLoss = nn.CrossEntropyLoss(reduction='sum')
 
-    cudnn.benchmark
+    cudnn.benchmark = True
 
     NUM_ITER = max(len(source_train_dataset_main), len(target_train_dataset_main)) // batch_size
 
@@ -631,7 +631,10 @@ def train_RGBD_DA_SAFN(net, source_train_dataset_main, source_train_dataset_pret
 
             # print statistics
             running_loss_m += s_cls_loss_m.item()
-            running_loss_p += ((loss_sp + loss_tp).item()) / lamda
+            if source_pretext:
+                running_loss_p += ((loss_sp + loss_tp).item()) / lamda
+            else:
+                running_loss_p += (loss_tp.item()) / lamda
             if it % 100 == 99:  # print every 100 mini-batches
                 print(
                     f'[{epoch + 1}, {it + 1}] Lm {running_loss_m / 100}, Lp {running_loss_p / 100}, EntropyLoss {running_entropy / 100}')
