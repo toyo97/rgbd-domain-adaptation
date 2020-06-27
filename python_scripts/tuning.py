@@ -102,7 +102,7 @@ def tuning():
         'weight_decay': 0.0005
     }
 
-    """"# Ablation study 1 -> equal heads
+    # Ablation study 1 -> equal heads
     net = ablationAFNNet(NUM_CLASSES)
     state_dict = {'params': params}
     state_dict['results'] = run_train_safn.train_RGBD_DA_SAFN(net, source_train_dataset_main,
@@ -116,7 +116,7 @@ def tuning():
 
     res_file = open(f'final_results/ablation1/res.obj', 'wb')
     pickle.dump(state_dict, res_file)
-"""
+
     # Ablation study 2 -> no source thorough pretext head
     net = AFNNet(NUM_CLASSES)
     state_dict = {'params': params}
