@@ -338,7 +338,7 @@ class ablationAFNNet(nn.Module):
             nn.BatchNorm1d(num_features=1000),
             nn.ReLU(),
             nn.Dropout(p=self.dropout_p),
-            nn.Linear(100, 4)
+            nn.Linear(1000, 4)
         )
 
         self.pretext_head.apply(init_weights)
