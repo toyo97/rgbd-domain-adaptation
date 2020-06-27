@@ -470,7 +470,7 @@ def train_sourceonly_singlemod_SAFN(net, modality,
 def train_RGBD_DA_SAFN(net, source_train_dataset_main, source_train_dataset_pretext, target_dataset_main,
                        target_dataset_pretext, target_dataset_main_ent, source_test_dataset_main, batch_size,
                        num_epochs, lr, momentum, step_size, gamma, entropy_weight, lamda, checkpoint_dir, weight_decay,
-                       dr, weight_L2norm):
+                       dr, weight_L2norm, source_pretext = True):
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     net = net.to(device)
@@ -598,16 +598,17 @@ def train_RGBD_DA_SAFN(net, source_train_dataset_main, source_train_dataset_pret
             # SOURCE PRETEXT FORWARD PASS
             # ***************************
             # using same batch as main forward pas
+            if source_pretext:
 
-            rimgs, dimgs, labels = next(source_data_pretext_iter)
+                rimgs, dimgs, labels = next(source_data_pretext_iter)
 
-            rimgs = rimgs.to(device)
-            dimgs = dimgs.to(device)
-            labels = labels.to(device)
+                rimgs = rimgs.to(device)
+                dimgs = dimgs.to(device)
+                labels = labels.to(device)
 
-            outputs = net(rimgs, dimgs, "pretext")
-            loss_sp = lamda * criterion(outputs, labels)
-            loss_sp.backward()
+                outputs = net(rimgs, dimgs, "pretext")
+                loss_sp = lamda * criterion(outputs, labels)
+                loss_sp.backward()
 
             # ***************************
             # TARGET PRETEXT FORWARD PASS

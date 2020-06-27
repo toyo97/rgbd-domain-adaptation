@@ -200,7 +200,7 @@ class Net(nn.Module):
 
 
 class AFNNet(nn.Module):
-    def __init__(self, num_classes, single_mod=None, dropout_p=0.5):
+    def __init__(self, num_classes, single_mod=None, dropout_p=0.5, rescale_dropout = True):
         """
         RGBD Domain Adaptation network based on Resnet18
         @param num_classes: number of output classes
@@ -213,6 +213,7 @@ class AFNNet(nn.Module):
             raise ValueError('single_mod parameter not valid. Please choose between `RGB` or `depth`, otherwise leave '
                              'it to None')
 
+        self.rescale_dropout = rescale_dropout
         self.single_mod = single_mod
         self.dropout_p = dropout_p
         num_maps = 1024
@@ -275,8 +276,90 @@ class AFNNet(nn.Module):
         if pretext is None:
             out = self.main_head(tot_features)
 
+            if self.rescale_dropout:
+                if self.training:
+                    out.mul_(math.sqrt(1 - self.dropout_p))
+
+            class_scores = self.fc2(out)
+            return out, class_scores
+
+        else:
+            out2 = self.pretext_head(tot_features)
+            return out2
+
+
+class ablationAFNNet(nn.Module):
+    def __init__(self, num_classes, single_mod=None, dropout_p=0.5):
+        """
+        RGBD Domain Adaptation network based on Resnet18
+        @param num_classes: number of output classes
+        @param single_mod: specify `RGB` or `depth` if only one modality is being passed through the network
+                        otherwise leave it to None
+        """
+        super(AFNNet, self).__init__()
+
+        if single_mod not in ['RGB', 'depth', None]:
+            raise ValueError('single_mod parameter not valid. Please choose between `RGB` or `depth`, otherwise leave '
+                             'it to None')
+
+        self.single_mod = single_mod
+        self.dropout_p = dropout_p
+        num_maps = 1024
+        if self.single_mod is not None:
+            num_maps = 512
+
+        state_dict = load_state_dict_from_url(model_urls['resnet18'])
+
+        self.rgb_feature_extractor = ModifiedResNet(BasicBlock, [2, 2, 2, 2])
+        self.rgb_feature_extractor.load_state_dict(state_dict, strict=False)
+        self.depth_feature_extractor = ModifiedResNet(BasicBlock, [2, 2, 2, 2])
+        self.depth_feature_extractor.load_state_dict(state_dict, strict=False)
+
+        self.main_head = nn.Sequential(
+            nn.AdaptiveAvgPool2d((1, 1)),  # output has shape (batch_size, num_featues, 1, 1)
+            nn.Flatten(),
+            nn.Linear(num_maps, 1000),  # wants first dimension = batch_size
+            # In resnet18 it is 512 * block.expansion -> ???
+            nn.BatchNorm1d(num_features=1000),
+            nn.ReLU(),
+            nn.Dropout(p=self.dropout_p)
+        )
+        self.fc2 = nn.Linear(1000, num_classes)
+
+        # Xavier initialization
+        self.main_head.apply(init_weights)
+        self.fc2.apply(init_weights)
+
+        self.pretext_head = nn.Sequential(
+            nn.AdaptiveAvgPool2d((1, 1)),  # output has shape (batch_size, num_featues, 1, 1)
+            nn.Flatten(),
+            nn.Linear(num_maps, 1000),  # wants first dimension = batch_size
+            # In resnet18 it is 512 * block.expansion -> ???
+            nn.BatchNorm1d(num_features=1000),
+            nn.ReLU(),
+            nn.Dropout(p=self.dropout_p),
+            nn.Linear(100, 4)
+        )
+
+        self.pretext_head.apply(init_weights)
+
+    def forward(self, x=None, y=None, pretext=None):  # x is the rgb batch, y the depth batch
+        if self.single_mod == 'RGB':
+            tot_features = self.rgb_feature_extractor(x)
+
+        if self.single_mod == 'depth':
+            tot_features = self.depth_feature_extractor(y)
+
+        if self.single_mod is None:
+            rgb_features = self.rgb_feature_extractor(x)  # list of rgb filters of the batch (list_size = batch_size)
+            depth_features = self.depth_feature_extractor(y)
+            tot_features = torch.cat((depth_features, rgb_features), 1)
+
+        if pretext is None:
+            out = self.main_head(tot_features)
+
             if self.training:
-                out.mul_(math.sqrt(1 - self.dropout_p))
+                    out.mul_(math.sqrt(1 - self.dropout_p))
 
             class_scores = self.fc2(out)
             return out, class_scores
