@@ -31,7 +31,7 @@ def main():
     from modules.datasets import TransformedDataset
     from modules.net import AFNNet
     import modules.transforms as RGBDtransforms
-    import modules.training_methods_hafn as run_train
+    import modules.training_methods_safn as run_train
     from modules.datasets import SynROD_ROD
 
     imgnet_mean, imgnet_std = (0.485, 0.456, 0.406), (0.229, 0.224, 0.225)
@@ -95,7 +95,7 @@ def main():
                                                                                                WEIGHT_DECAY,
                                                                                                dr=DELTAR,
                                                                                                weight_L2norm=WEIGHT_L2NORM,
-                                                                                               entropy=ENTROPY, ENTROPY_WEIGHT)
+                                                                                               entropy=ENTROPY, entropy_weight=ENTROPY_WEIGHT)
 
 
 if __name__ == "__main__":
