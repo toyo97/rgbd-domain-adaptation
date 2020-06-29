@@ -89,6 +89,7 @@ Here are reported the hyperparameters which differ from the default setting writ
 
 - Batch size: 32
 - delta_r: 1.0
+- weight L2 norm: 0.05
 
 ## RGB_only
 	
@@ -184,6 +185,7 @@ epoch: 10
 
 - Batch size: 32
 - radius: 25
+- weight L2 norm: 0.05
 
 ## RGB_only
 	
