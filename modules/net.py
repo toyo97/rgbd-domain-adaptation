@@ -14,6 +14,8 @@ def init_weights(m):
         m.bias.data.fill_(0.0)
 
 
+
+# Feature extraxctor based on ResnNet-18
 class ModifiedResNet(nn.Module):
     """
     Pytorch implementation of Resnet without the last two layers (fully connected and pooling)
@@ -116,7 +118,7 @@ class ModifiedResNet(nn.Module):
         return self._forward_impl(x)
 
 
-# V2
+# Network used for RGB, depth, e2e and relative rotation
 class Net(nn.Module):
     def __init__(self, num_classes, single_mod=None):
         """
@@ -199,13 +201,16 @@ class Net(nn.Module):
             return out2
 
 
+# Network used for AFN experiments
+
 class AFNNet(nn.Module):
     def __init__(self, num_classes, single_mod=None, dropout_p=0.5, rescale_dropout = True):
         """
-        RGBD Domain Adaptation network based on Resnet18
+        RGBD Domain Adaptation network based on Resnet18 with AFN
         @param num_classes: number of output classes
         @param single_mod: specify `RGB` or `depth` if only one modality is being passed through the network
                         otherwise leave it to None
+        @param rescale_dropout: False if you don't want to rescale the features which comes out from the last Dropout
         """
         super(AFNNet, self).__init__()
 
@@ -287,11 +292,12 @@ class AFNNet(nn.Module):
             out2 = self.pretext_head(tot_features)
             return out2
 
+# Network used for AFN experiments with pretext head equal to main head
 
 class ablationAFNNet(nn.Module):
     def __init__(self, num_classes, single_mod=None, dropout_p=0.5):
         """
-        RGBD Domain Adaptation network based on Resnet18
+        RGBD Domain Adaptation network based on Resnet18 with AFN
         @param num_classes: number of output classes
         @param single_mod: specify `RGB` or `depth` if only one modality is being passed through the network
                         otherwise leave it to None
