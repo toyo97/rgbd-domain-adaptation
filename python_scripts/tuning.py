@@ -90,6 +90,85 @@ def tuning():
     DR = 1
     RADIUS = 25
 
+    # HAFN e2e 5 final run
+
+    params = {'gamma': 0.05, 'lr': 0.0005179474679231213, 'step_size': 2}
+
+    BATCH_SIZE =  32
+    for run in range(5):
+        net = AFNNet(NUM_CLASSES)
+        state_dict = {'params': params}
+        state_dict['results'] = run_train_hafn.RGBD_e2e_HAFN(net,
+                                                             source_train_dataset_main,
+                                                             target_dataset_main_entropy_loss,
+                                                             source_test_dataset_main,
+                                                             target_dataset_main,
+                                                             BATCH_SIZE, NUM_EPOCHS, params["lr"], MOMENTUM,
+                                                             params["step_size"], params["gamma"], None, WEIGHT_DECAY,
+                                                             RADIUS, WEIGHT_L2NORM, 0.5)
+
+        res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
+        pickle.dump(state_dict, res_file)
+
+    # SAFN RGB/ depth / e2e without rescaling factor after dropout
+
+    BATCH_SIZE = 32
+
+    net = AFNNet(NUM_CLASSES, single_mod="RGB", rescale_dropout= False)
+
+    state_dict = {'params': params}
+    state_dict['results'] = run_train_safn.train_sourceonly_singlemod_SAFN(net, "RGB",
+                                    source_train_dataset_main,
+                                    target_dataset_main_entropy_loss,
+                                    source_test_dataset_main,
+                                    target_dataset_main,
+                                    BATCH_SIZE, LR, MOMENTUM, STEP_SIZE, GAMMA, NUM_EPOCHS, None,
+                                    WEIGHT_DECAY,
+                                    DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
+
+    res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
+    pickle.dump(state_dict, res_file)
+
+    params = {'gamma': 0.1, 'lr': 0.0037, 'step_size': 7}
+    BATCH_SIZE = 32
+
+    net = AFNNet(NUM_CLASSES, single_mod="depth", rescale_dropout=False)
+
+    state_dict = {'params': params}
+    state_dict['results'] = run_train_safn.train_sourceonly_singlemod_SAFN(net, "depth",
+                                                                           source_train_dataset_main,
+                                                                           target_dataset_main_entropy_loss,
+                                                                           source_test_dataset_main,
+                                                                           target_dataset_main,
+                                                                           BATCH_SIZE, params["lr"], MOMENTUM, params["step_size"], params["gamma"],
+                                                                           NUM_EPOCHS, None,
+                                                                           WEIGHT_DECAY,
+                                                                           DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
+
+    res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
+    pickle.dump(state_dict, res_file)
+
+    params = {'gamma': 0.3, 'lr': 0.0024, 'step_size': 7}
+    BATCH_SIZE = 32
+
+    net = AFNNet(NUM_CLASSES, rescale_dropout=False)
+
+    state_dict = {'params': params}
+    state_dict['results'] = run_train_safn.RGBD_e2e_SAFN(net,
+                  source_train_dataset_main,
+                  target_dataset_main_entropy_loss,
+                  source_test_dataset_main,
+                  target_dataset_main,
+                  BATCH_SIZE, NUM_EPOCHS, params["lr"],  MOMENTUM, params["step_size"], params["gamma"], None, WEIGHT_DECAY,
+                  DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
+
+    res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
+    pickle.dump(state_dict, res_file)
+
+
+
+
+    """
     # RGBD DA RR
     params = {'gamma': 0.02, 'lr': 0.0001456, 'step_size': 3}
     for run in range(2):
@@ -148,35 +227,6 @@ def tuning():
         pickle.dump(state_dict, res_file)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    """"
     # E2E
     for i, params in enumerate(params_list):
         net = AFNNet(NUM_CLASSES)
@@ -265,9 +315,9 @@ def tuning():
 
     res_file = open(f'final_results/ablation4/res.obj', 'wb')
     pickle.dump(state_dict, res_file)
-    """
 
-    """
+
+
     # HAFN
     RADIUS = 25
     BATCH_SIZE = 32
@@ -312,9 +362,9 @@ def tuning():
 
         res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
         pickle.dump(state_dict, res_file)
-    """
 
-    """ Parametri per Relative rotation
+
+     Parametri per Relative rotation
     param_grid = ParameterGrid([
              {"weight_decay": [0.05, 0.005, 0.0005],
               'lr': np.logspace(-2, -5, 50),
