@@ -107,7 +107,7 @@ def tuning():
                                                              params["step_size"], params["gamma"], None, WEIGHT_DECAY,
                                                              RADIUS, WEIGHT_L2NORM, 0.5)
 
-        res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
+        res_file = open(f'final_results/HAFNe2e5runs/res_{i}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
     # SAFN RGB/ depth / e2e without rescaling factor after dropout
@@ -115,7 +115,7 @@ def tuning():
     BATCH_SIZE = 32
 
     net = AFNNet(NUM_CLASSES, single_mod="RGB", rescale_dropout= False)
-
+    params = {'used': 'default params'}
     state_dict = {'params': params}
     state_dict['results'] = run_train_safn.train_sourceonly_singlemod_SAFN(net, "RGB",
                                     source_train_dataset_main,
@@ -126,7 +126,7 @@ def tuning():
                                     WEIGHT_DECAY,
                                     DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
 
-    res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
+    res_file = open(f'final_results/normal_dropout_SAFN/RGB/res_{i}.obj', 'wb')
     pickle.dump(state_dict, res_file)
 
     params = {'gamma': 0.1, 'lr': 0.0037, 'step_size': 7}
@@ -145,7 +145,7 @@ def tuning():
                                                                            WEIGHT_DECAY,
                                                                            DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
 
-    res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
+    res_file = open(f'final_results/normal_dropout_SAFN/RGB/res_{i}.obj', 'wb')
     pickle.dump(state_dict, res_file)
 
     params = {'gamma': 0.3, 'lr': 0.0024, 'step_size': 7}
@@ -162,7 +162,7 @@ def tuning():
                   BATCH_SIZE, NUM_EPOCHS, params["lr"],  MOMENTUM, params["step_size"], params["gamma"], None, WEIGHT_DECAY,
                   DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
 
-    res_file = open(f'final_results/HAFNe2e/res_{i}.obj', 'wb')
+    res_file = open(f'final_results/normal_dropout_SAFN/e2e/res_{i}.obj', 'wb')
     pickle.dump(state_dict, res_file)
 
 
