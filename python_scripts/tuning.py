@@ -188,7 +188,7 @@ def tuning():
                                     WEIGHT_DECAY,
                                     RADIUS, WEIGHT_L2NORM, 0.5)
 
-        res_file = open(f'final_results/last/RGB/res_{run}.obj', 'wb')
+        res_file = open(f'last/RGB/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
     # HAFN depth 5 run
@@ -214,7 +214,7 @@ def tuning():
                                                                                WEIGHT_DECAY,
                                                                                RADIUS, WEIGHT_L2NORM, 0.5)
 
-        res_file = open(f'final_results/last/depth/res_{run}.obj', 'wb')
+        res_file = open(f'last/depth/res_{run}.obj', 'wb')
         pickle.dump(state_dict, res_file)
 
 
