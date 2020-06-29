@@ -92,6 +92,8 @@ def tuning():
 
     # HAFN e2e 5 final run
 
+    """
+    Last run:
     params = {'gamma': 0.05, 'lr': 0.0005179474679231213, 'step_size': 2}
 
     BATCH_SIZE =  32
@@ -163,7 +165,57 @@ def tuning():
                   DR, WEIGHT_L2NORM, True, ENTROPY_WEIGHT)
 
     res_file = open(f'final_results/normal_dropout_SAFN/e2e/res_{i}.obj', 'wb')
-    pickle.dump(state_dict, res_file)
+    pickle.dump(state_dict, res_file)"""
+
+    # HAFN RGB 5 run
+
+    params = {
+        'gamma': 0.02,
+        'lr': 0.0003906939937054617,
+        'step_size': 3
+    }
+
+    BATCH_SIZE = 32
+    for run in range(5):
+        net = AFNNet(NUM_CLASSES, single_mod="RGB")
+        state_dict = {'params': params}
+        state_dict['results'] = run_train_hafn.train_sourceonly_singlemod_HAFN(net, "RGB",
+                                    source_train_dataset_main,
+                                    target_dataset_main_entropy_loss,
+                                    source_test_dataset_main,
+                                    target_dataset_main,
+                                    BATCH_SIZE, params["lr"], MOMENTUM, params["step_size"], params["gamma"], NUM_EPOCHS, None,
+                                    WEIGHT_DECAY,
+                                    RADIUS, WEIGHT_L2NORM, 0.5)
+
+        res_file = open(f'final_results/HAFNRGB5runs/res_{i}.obj', 'wb')
+        pickle.dump(state_dict, res_file)
+
+    # HAFN depth 5 run
+
+    params = {
+        'gamma': 0.05,
+        'lr': 0.007543120063354615,
+        'step_size': 6
+    }
+
+    BATCH_SIZE = 32
+    for run in range(5):
+        net = AFNNet(NUM_CLASSES, single_mod="depth")
+        state_dict = {'params': params}
+        state_dict['results'] = run_train_hafn.train_sourceonly_singlemod_HAFN(net, "depth",
+                                                                               source_train_dataset_main,
+                                                                               target_dataset_main_entropy_loss,
+                                                                               source_test_dataset_main,
+                                                                               target_dataset_main,
+                                                                               BATCH_SIZE, params["lr"], MOMENTUM,
+                                                                               params["step_size"], params["gamma"],
+                                                                               NUM_EPOCHS, None,
+                                                                               WEIGHT_DECAY,
+                                                                               RADIUS, WEIGHT_L2NORM, 0.5)
+
+        res_file = open(f'final_results/HAFNdepth5runs/res_{i}.obj', 'wb')
+        pickle.dump(state_dict, res_file)
 
 
 if __name__ == '__main__':
