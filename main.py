@@ -20,8 +20,8 @@ def parse_arg():
     parser.add_argument("--no-ram", dest='ram', action='store_false',
                         help='dataset not stored in main memory, slower processing')
     parser.set_defaults(ram=True)
-    parser.add_argument("--ckpt_dir", default="none",
-                        help='select --ckpt_dir=none if not desired')
+    parser.add_argument("--ckpt_dir", default=None,
+                        help='leave default if checkpoint not desired')
     parser.add_argument("--result_dir", default="output/")
     parser.add_argument("--batch_size", default=64, type=int)
     parser.add_argument("--epochs", default=40, type=int)
@@ -43,7 +43,7 @@ def parse_arg():
                              '`safn`: hard afn e2e,'
                              '`safn-rr`: stepwise afn and relative rotation DA,'
                              '`hafn`: hard afn e2e,'
-                             '`hafn-rr`: hard afn and relative rotation DA,'
+                             '`hafn-rr`: hard afn and relative rotation DA'
                         )
 
     args = parser.parse_args()
@@ -112,7 +112,6 @@ def load_datasets():
 
 
 def train():
-    checkpoint_dir = None if str.lower(args.ckpt_dir) == 'none' else args.ckpt_dir
 
     if args.experiment == 'rr':
         net = Net(args.class_num)
@@ -125,7 +124,7 @@ def train():
                                           source_test_dataset_pretext,
                                           args.batch_size, args.epochs, args.lr, args.momentum,
                                           args.step_size, args.gamma, args.entropy_weight, args.lamda,
-                                          checkpoint_dir, args.weight_decay,
+                                          args.ckpt_dir, args.weight_decay,
                                           target_train_dataset_main)
     elif args.experiment == 'safn':
         net = AFNNet(args.class_num)
@@ -135,7 +134,7 @@ def train():
                                                source_test_dataset_main,
                                                target_test_dataset_main,
                                                args.batch_size, args.epochs, args.lr, args.momentum,
-                                               args.step_size, args.gamma, checkpoint_dir,
+                                               args.step_size, args.gamma, args.ckpt_dir,
                                                args.weight_decay, args.dr,
                                                args.weight_L2norm, True, args.entropy_weight)
     elif args.experiment == 'safn-rr':
@@ -147,7 +146,7 @@ def train():
                                                     target_train_dataset_main,
                                                     source_test_dataset_main, args.batch_size, args.epochs, args.lr,
                                                     args.momentum, args.step_size, args.gamma, args.entropy_weight,
-                                                    args.lamda, checkpoint_dir, args.weight_decay, args.dr,
+                                                    args.lamda, args.ckpt_dir, args.weight_decay, args.dr,
                                                     args.weight_L2norm)
 
     elif args.experiment == "hafn-rr":
@@ -157,7 +156,7 @@ def train():
                                                     target_dataset_pretext, target_train_dataset_main,
                                                     source_test_dataset_main, args.batch_size,
                                                     args.num_epochs, args.lr, args.momentum, args.step_size, args.gamma,
-                                                    args.entropy_weight, args.lamda, checkpoint_dir, args.weight_decay,
+                                                    args.entropy_weight, args.lamda, args.ckpt_dir, args.weight_decay,
                                                     args.radius, args.weight_L2norm)
 
     elif args.experiment == "hafn":
@@ -168,7 +167,7 @@ def train():
                                                source_test_dataset_main,
                                                target_test_dataset_main,
                                                args.batch_size, args.num_epochs, args.lr, args.momentum, args.step_size,
-                                               args.gamma, checkpoint_dir, args.weight_decay,
+                                               args.gamma, args.ckpt_dir, args.weight_decay,
                                                args.radius, args.weight_L2norm, args.dropout_p)
 
     else:
