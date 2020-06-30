@@ -111,6 +111,11 @@ Here are reported the hyperparameters which differ from the default setting writ
 	Average result obtained: 0.5794063308289198 
 	standard deviation: 0.010835648112320767
 	
+	Results with Normal Dropout
+	accuracy: 0.5751016134991994
+	epoch: 1
+	
+
 ## depth_only
 	
 	{
@@ -126,6 +131,10 @@ Here are reported the hyperparameters which differ from the default setting writ
 	Average result obtained: 0.2678716590713142
 	standard deviation: 0.01339667400881486
 
+	Results with Normal Dropout
+	accuracy: 0.1272940017243503
+	epoch: 1
+	
 	
 ## e2e
 
@@ -141,6 +150,10 @@ Here are reported the hyperparameters which differ from the default setting writ
 	After 5 runs
 	Average result obtained: 0.5565402143121074
 	standard deviation: 0.02125088893518903
+	
+	Results with Normal Dropout
+	accuracy: 0.5845547481216898
+	epoch: 1
 
 
 # SAFN_RR
@@ -198,7 +211,8 @@ epoch: 10
 	epoch: 1
 	
 	After 5 run
-	To be done
+	Average result obtained: 0.5697622859958122 
+	standard deviation: 0.006180266613741486
 	
 	
 ## depth_only
@@ -212,8 +226,9 @@ epoch: 10
 	epoch: 8
 	
 	After 5 run
-	To be done
-	
+	Average result obtained: 0.28486266781623354
+	standard deviation: 0.010440746376055843
+		
 	
 ## e2e
 
@@ -226,8 +241,9 @@ epoch: 10
 	epoch: 3
 	
 	After 5 run
-	To be done
-
+	Average result obtained: 0.5539967976351768 
+	standard deviation: 0.023607242092620582
+	
 
 # HAFN_RR
 
@@ -244,5 +260,4 @@ epoch: 10
 	After 2 runs
 	Average result obtained: 0.5514841729277005 
 	standard deviation: 0.004803547234881134
-
-
+	
