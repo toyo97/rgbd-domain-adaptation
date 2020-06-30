@@ -6,6 +6,7 @@ from torchvision import transforms
 
 import modules.training_methods as run_train
 import modules.training_methods_safn as run_train_safn
+import modules.training_methods_hafn as run_train_hafn
 import modules.transforms as RGBDtransforms
 from modules.datasets import SynROD_ROD
 from modules.datasets import TransformedDataset
@@ -15,8 +16,9 @@ from modules.net import Net, AFNNet
 def parse_arg():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_root", default="")
-    parser.add_argument("--ram", dest='ram', action='store_false')
-    parser.add_argument("--no-ram", dest='ram', action='store_false')
+    parser.add_argument("--ram", dest='ram', action='store_true', help='dataset stored in main memory')
+    parser.add_argument("--no-ram", dest='ram', action='store_false',
+                        help='dataset not stored in main memory, slower processing')
     parser.set_defaults(ram=True)
     parser.add_argument("--ckpt_dir", default="none",
                         help='select --ckpt_dir=none if not desired')
@@ -27,19 +29,22 @@ def parse_arg():
     parser.add_argument("--class_num", default=47, type=int)
     parser.add_argument("--dropout_p", default=0.5)
     parser.add_argument("--momentum", default=0.9)
-    parser.add_argument("--weight_decay", default=0.05)
-    parser.add_argument("--step_size", default=10)
+    parser.add_argument("--weight_decay", default=0.05, help='gamma factor for StepLR scheduler')
+    parser.add_argument("--step_size", default=10, help='step size for StepLR scheduler')
     parser.add_argument("--gamma", default=1)
     parser.add_argument("--lambda", dest='lamda', default=1.0, help='weight for pretext loss')
     parser.add_argument("--entropy_weight", default=1, help='weight for entropy loss')
     parser.add_argument("--dr", default=1.0, help='step size for SAFN')
     parser.add_argument("--radius", default=25, help='shared fixed R value for HAFN')
     parser.add_argument("--weight_L2norm", default=0.05, help='weight of AFN loss')
-    parser.add_argument("--experiment", default='rr', choices=['rr', 'safn', 'safn-rr'],
+    parser.add_argument("--experiment", default='rr', choices=['rr', 'safn', 'safn-rr', 'hafn', 'hafn-rr'],
                         help='select the experiment to run:'
                              '`rr`: domain adaptation with relative rotation,'
-                             '`safn`: stepwise afn,'
-                             '`safn-rr`: stepwise afn and relative rotation DA')
+                             '`safn`: hard afn e2e,'
+                             '`safn-rr`: stepwise afn and relative rotation DA,'
+                             '`hafn`: hard afn e2e,'
+                             '`hafn-rr`: hard afn and relative rotation DA,'
+                        )
 
     args = parser.parse_args()
     return args
@@ -100,7 +105,7 @@ def load_datasets():
     source_test_dataset_main = TransformedDataset(source_test_dataset, val_transform)
     source_test_dataset_pretext = TransformedDataset(source_test_dataset, val_transform_rotation)
 
-    # Data loader for ROD train and test - PRETEXT at train, MAIN at test (check validity of drop last when testing)
+    # Datasets for ROD train and test - PRETEXT at train, MAIN at test
     target_test_dataset_main = TransformedDataset(target_dataset, val_transform)
     target_dataset_pretext = TransformedDataset(target_dataset, val_transform_rotation)
     target_train_dataset_main = TransformedDataset(target_dataset, train_transform)
@@ -142,8 +147,30 @@ def train():
                                                     target_train_dataset_main,
                                                     source_test_dataset_main, args.batch_size, args.epochs, args.lr,
                                                     args.momentum, args.step_size, args.gamma, args.entropy_weight,
-                                                    args.lamda, args.ckpt_dir, args.weight_decay, args.dr,
+                                                    args.lamda, checkpoint_dir, args.weight_decay, args.dr,
                                                     args.weight_L2norm)
+
+    elif args.experiment == "hafn-rr":
+        net = AFNNet(args.class_num)
+        results = run_train_hafn.train_RGBD_DA_HAFN(net, source_train_dataset_main, source_train_dataset_pretext,
+                                                    target_test_dataset_main,
+                                                    target_dataset_pretext, target_train_dataset_main,
+                                                    source_test_dataset_main, args.batch_size,
+                                                    args.num_epochs, args.lr, args.momentum, args.step_size, args.gamma,
+                                                    args.entropy_weight, args.lamda, checkpoint_dir, args.weight_decay,
+                                                    args.radius, args.weight_L2norm)
+
+    elif args.experiment == "hafn":
+        net = AFNNet(args.class_num)
+        results = run_train_hafn.RGBD_e2e_HAFN(net,
+                                               source_train_dataset_main,
+                                               target_train_dataset_main,
+                                               source_test_dataset_main,
+                                               target_test_dataset_main,
+                                               args.batch_size, args.num_epochs, args.lr, args.momentum, args.step_size,
+                                               args.gamma, checkpoint_dir, args.weight_decay,
+                                               args.radius, args.weight_L2norm, args.dropout_p)
+
     else:
         print(f'ERROR: Experiment {args.experiment} not available')
         raise ValueError
