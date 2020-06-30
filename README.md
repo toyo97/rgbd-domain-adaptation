@@ -8,7 +8,7 @@ _Machine and Deep Learning Project @ Politecnico di Torino, Italy_
 3. [References](#references)
 
 ## Requirements
-Please check the requirements before running the experiments. You can find the necessary packages in the `requirement.txt` file.
+Please check the requirements before running the experiments. You can find the necessary packages in the `requirement.txt` file. The Python version used to carry out all the experiments is `3.6.9`.
 
 ## Usage
 To run one of the experiments (between DA with relative rotation, Stepwise AFN and the combination of the two) just run
