@@ -1,14 +1,14 @@
 # RGB-D Domain Adaptation
 _Machine and Deep Learning Project @ Politecnico di Torino, Italy_
 
-> The purpose, the achieved results and the theory behind these experiments are thoroughly explained in the [project report](#)
+> The purpose, the achieved results and the theory behind these experiments are thoroughly explained in the [project report](https://github.com/toyo97/rgbd-domain-adaptation/blob/master/report.pdf).
 
 1. [Requirements](#requirements)
 2. [Usage](#usage)
 3. [References](#references)
 
 ## Requirements
-Please check the requirements before running the experiments. You can find the necessary packages in the `requirement.txt` file.
+Please check the requirements before running the experiments. You can find the necessary packages in the `requirement.txt` file. The Python version used to carry out all the experiments is `3.6.9`.
 
 ## Usage
 To run one of the experiments (between DA with relative rotation, Stepwise AFN and the combination of the two) just run
