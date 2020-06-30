@@ -79,4 +79,5 @@ optional arguments:
 ## References
 
 [1] M.  R.  Loghmani,  L.  Robbiano,  M.  Planamente,  K.  Park,B.  Caputo,  and  M.  Vincze. _Unsupervised  domain  adaptation through inter-modal rotation for rgb-d object recognition,2020_
+
 [2] R. Xu, G. Li, J. Yang, and L. Lin. _Larger norm more transferable: An adaptive feature norm approach for unsuperviseddomain adaptation, 2018_
