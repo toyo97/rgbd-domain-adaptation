@@ -3,12 +3,9 @@ _Machine and Deep Learning Project @ Politecnico di Torino, Italy_
 
 > The purpose, the achieved results and the theory behind these experiments are thoroughly explained in the [project report](#)
 
-1. [Description](#description)
-2. [Requirements](#requirements)
-3. [Usage](#usage)
-4. [References](#references)
-
-## Description
+1. [Requirements](#requirements)
+2. [Usage](#usage)
+3. [References](#references)
 
 ## Requirements
 Please check the requirements before running the experiments. You can find the necessary packages in the `requirement.txt` file.
@@ -61,3 +58,6 @@ optional arguments:
 ```
 
 ## References
+
+[1] M.  R.  Loghmani,  L.  Robbiano,  M.  Planamente,  K.  Park,B.  Caputo,  and  M.  Vincze. _Unsupervised  domain  adaptation through inter-modal rotation for rgb-d object recognition,2020_
+[2] R. Xu, G. Li, J. Yang, and L. Lin. _Larger norm more transferable: An adaptive feature norm approach for unsuperviseddomain adaptation, 2018_
