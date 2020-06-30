@@ -154,7 +154,7 @@ def tuning():
     BATCH_SIZE = 32
 
     net = AFNNet(NUM_CLASSES, rescale_dropout=False)
-kk
+
     state_dict = {'params': params}
     state_dict['results'] = run_train_safn.RGBD_e2e_SAFN(net,
                   source_train_dataset_main,
